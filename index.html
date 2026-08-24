@@ -17,8 +17,6 @@
     --ink-dim: #9fb0c2;
     --accent: #5fd0c0;
     --accent-2: #f2a65a;
-    --accent-3: #8b7fe0;
-    --danger: #e0716f;
     --radius: 14px;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
@@ -39,7 +37,6 @@
     overflow:hidden;
   }
 
-  /* ---------- ヘッダー ---------- */
   header{
     padding: 10px 14px;
     display:flex;
@@ -66,7 +63,6 @@
     border:1px solid var(--line);
   }
 
-  /* ---------- 図鑑タブ ---------- */
   .tabs{
     display:flex;
     gap:8px;
@@ -104,7 +100,6 @@
   }
   .tab-btn:active{ transform: scale(0.96); }
 
-  /* ---------- メインレイアウト ---------- */
   main{
     flex:1;
     display:flex;
@@ -157,7 +152,9 @@
     padding:6px 12px;
     border-radius:999px;
     pointer-events:none;
+    line-height:1.4;
   }
+  .zoom-badge b{ color: var(--accent); font-weight:700; }
 
   .zoom-controls{
     position:absolute;
@@ -186,9 +183,9 @@
     position:absolute;
     top:14px;
     right:14px;
-    background: rgba(224,113,111,0.15);
-    color: #f2a09e;
-    border: 1px solid rgba(224,113,111,0.4);
+    background: rgba(242,166,90,0.15);
+    color: #f2c08a;
+    border: 1px solid rgba(242,166,90,0.4);
     font-size:12px;
     padding:6px 12px;
     border-radius:999px;
@@ -200,7 +197,6 @@
   .limit-badge.show{ display:block; }
   .limit-badge ruby rt{ font-size:8px; }
 
-  /* ---------- サイドパネル(設定) ---------- */
   #panel{
     width: 300px;
     flex-shrink:0;
@@ -350,7 +346,6 @@
   }
   .desc-box ruby rt{ font-size:9px; color: var(--ink-dim); }
 
-  /* ---------- 設定を開く(モバイル用) ---------- */
   #panel-toggle{
     display:none;
     position:fixed;
@@ -376,7 +371,6 @@
     z-index:15;
   }
 
-  /* ---------- 初回モーダル ---------- */
   #intro-modal{
     position:fixed; inset:0;
     background: rgba(6,9,13,0.9);
@@ -418,7 +412,6 @@
   }
   .modal-check input{ width:20px; height:20px; }
 
-  /* ---------- レスポンシブ ---------- */
   @media (max-width: 860px){
     #panel{
       position:fixed;
@@ -454,57 +447,24 @@
     <canvas id="stage"></canvas>
     <div class="zoom-badge" id="zoom-badge">×1.0</div>
     <div class="limit-badge" id="limit-badge"></div>
-    <div class="stage-hint" id="stage-hint">ゆびでなぞると<ruby>移動<rt>いどう</rt></ruby>、2本ゆびでズームできるよ</div>
+    <div class="stage-hint" id="stage-hint">ゆびでなぞると移動、2本ゆびでズームできるよ</div>
     <div class="zoom-controls">
-      <button id="zoom-in" aria-label="ズームイン">＋</button>
-      <button id="zoom-out" aria-label="ズームアウト">－</button>
-      <button id="zoom-reset" aria-label="もどす" style="font-size:14px;">⟲</button>
+      <button id="zoom-reset" aria-label="もどす">⟲</button>
     </div>
   </div>
 
   <div id="panel">
-    <div class="panel-section">
-      <p class="panel-title">🌱 <ruby>育<rt>そだ</rt></ruby>てる<ruby>速<rt>はや</rt></ruby>さ</p>
-      <div class="row">
-        <span class="row-label">スピード</span>
-        <div class="stepper">
-          <button id="speed-down" aria-label="おそくする">▽</button>
-          <input id="speed-val" type="text" inputmode="numeric" value="3" readonly>
-          <button id="speed-up" aria-label="はやくする">△</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel-section" id="depth-section">
-      <p class="panel-title">🔁 <ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>しの<ruby>回数<rt>かいすう</rt></ruby></p>
-      <div class="row">
-        <span class="row-label">ふかさ</span>
-        <div class="stepper">
-          <button id="depth-down" aria-label="へらす">▽</button>
-          <input id="depth-val" type="text" inputmode="numeric" value="4" readonly>
-          <button id="depth-up" aria-label="ふやす">△</button>
-        </div>
-      </div>
-    </div>
-
     <div class="panel-section">
       <p class="panel-title">🎨 いろ</p>
       <div class="swatches" id="color-swatches"></div>
     </div>
 
     <div class="panel-section">
-      <div class="toggle-row">
-        <span class="row-label">アニメーション</span>
-        <button class="switch on" id="anim-toggle"></button>
-      </div>
+      <button class="btn-full btn-primary" id="replay-btn">⟲ さいしょの<ruby>表示<rt>ひょうじ</rt></ruby>にもどす</button>
     </div>
 
     <div class="panel-section">
-      <button class="btn-full btn-primary" id="replay-btn">🔄 もう<ruby>一度<rt>いちど</rt></ruby>さいしょから</button>
-    </div>
-
-    <div class="panel-section">
-      <button class="btn-full" id="save-btn">💾 <ruby>画像<rt>がぞう</rt></ruby>で<ruby>保存<rt>ほぞん</rt></ruby></button>
+      <button class="btn-full" id="save-btn">💾 画像で保存</button>
     </div>
 
     <div class="panel-section">
@@ -521,8 +481,8 @@
   <div class="modal-box">
     <h2>🔍 フラクタルずかんへ ようこそ</h2>
     <p>これは<ruby>同<rt>おな</rt></ruby>じ<ruby>形<rt>かたち</rt></ruby>が<ruby>何度<rt>なんど</rt></ruby>も<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>されてできる、<ruby>不思議<rt>ふしぎ</rt></ruby>な<ruby>図形<rt>ずけい</rt></ruby>「フラクタル」を<ruby>見<rt>み</rt></ruby>るアプリだよ。</p>
-    <p>上の タブ から<ruby>好<rt>す</rt></ruby>きな<ruby>図形<rt>ずけい</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでね。<ruby>右側<rt>みぎがわ</rt></ruby>(スマホは⚙️ボタン)で<ruby>速<rt>はや</rt></ruby>さや<ruby>色<rt>いろ</rt></ruby>を<ruby>変<rt>か</rt></ruby>えられるよ。</p>
-    <p>ゆびで<ruby>拡大<rt>かくだい</rt></ruby>すると、<ruby>同<rt>おな</rt></ruby>じ<ruby>形<rt>かたち</rt></ruby>がまた<ruby>出<rt>で</rt></ruby>てくるよ。どこまで<ruby>拡大<rt>かくだい</rt></ruby>できるか、ためしてみてね。</p>
+    <p>上の タブ から<ruby>好<rt>す</rt></ruby>きな<ruby>図形<rt>ずけい</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでね。<ruby>右側<rt>みぎがわ</rt></ruby>(スマホは⚙️ボタン)で<ruby>色<rt>いろ</rt></ruby>を<ruby>変<rt>か</rt></ruby>えられるよ。</p>
+    <p><ruby>雪<rt>ゆき</rt></ruby>の<ruby>結晶<rt>けっしょう</rt></ruby>と<ruby>三角形<rt>さんかくけい</rt></ruby>は、どこまでも<ruby>拡大<rt>かくだい</rt></ruby>できるよ。<ruby>何倍<rt>なんばい</rt></ruby>まで<ruby>行<rt>い</rt></ruby>けるか、ためしてみてね。</p>
     <label class="modal-check">
       <input type="checkbox" id="dont-show-again">
       <span><ruby>次<rt>つぎ</rt></ruby>からこの<ruby>画面<rt>がめん</rt></ruby>を<ruby>出<rt>だ</rt></ruby>さない</span>
@@ -535,51 +495,55 @@
 (function(){
   "use strict";
 
-  /* ============ 状態管理 ============ */
+  /* ============================================================
+     無限ズームの仕組み
+
+     浮動小数点数の精度は約15桁しかないため、素朴にズーム倍率を
+     上げ続けると座標の差が表現できなくなり図形が崩れる。
+
+     そこで「基準図形」の考え方を使う。シェルピンスキーもコッホも
+     自分自身の縮小コピーでできているので、ズームが一定倍率を超えたら
+     画面に映っている部分を新しい基準図形として座標系ごと作り直す。
+     こうすると座標の絶対値は常に扱いやすい範囲に留まり、
+     精度は永久に劣化しない。表示倍率だけ累積で掛けていけば、
+     見た目には無限にズームしていることになる。
+     ============================================================ */
+
   const state = {
-    type: 'tree',
-    speed: 3,       // 1-5
-    depth: 4,       // 種類ごとにclamp
+    type: 'sierpinski',
     colorIdx: 0,
-    animOn: true,
-    progress: 0,    // 0-1 育成進捗
-    playing: true,
-    // 表示ビュー(全図形共通のズーム/パン): 論理座標系の中心と半幅
+    // 表示ビュー(基準図形に対する相対座標)
     view: { cx: 0, cy: 0, halfW: 1 },
-    // ドラッグ用
+    // 座標系リセットで稼いだ倍率(累積)。表示倍率 = accumZoom / view.halfW
+    accumZoom: 1,
+    // 基準図形の頂点(リセットのたびに作り直す)
+    baseShape: null,
     drag: null,
     pinch: null,
   };
 
   const COLOR_THEMES = [
-    { name: 'モリノミドリ', main: '#5fd0c0', sub: '#3a8f7f', bg:'#0a0e13' },
-    { name: 'ユウヤケ',   main: '#f2a65a', sub: '#c96b2e', bg:'#0a0e13' },
-    { name: 'ムラサキゾラ', main: '#8b7fe0', sub: '#5a4fb0', bg:'#0a0e13' },
-    { name: 'サクラ',     main: '#f28fb0', sub: '#c65f85', bg:'#0a0e13' },
-    { name: 'ユキ',       main: '#eef3f8', sub: '#9fb0c2', bg:'#0a0e13' },
+    { name: 'ミズイロ', main: '#5fd0c0', sub: '#2e7d6e' },
+    { name: 'シロ',     main: '#ffffff', sub: '#9fb0c2' },
   ];
 
-  // infinite: true なら理論上どこまでもズームして同じ形が出続ける
   const FRACTAL_TYPES = [
-    { id:'tree',   name:'木',           dot:'#5fd0c0', maxDepth:10, minDepth:1, defDepth:8, infinite:false },
-    { id:'koch',   name:'雪の結晶',      dot:'#8fd3ff', maxDepth:6,  minDepth:0, defDepth:3, infinite:true },
-    { id:'sierpinski', name:'三角形',    dot:'#f2a65a', maxDepth:9,  minDepth:0, defDepth:5, infinite:true },
-    { id:'circles', name:'花びら',       dot:'#f28fb0', maxDepth:6,  minDepth:1, defDepth:4, infinite:false },
-    { id:'mandelbrot', name:'マンデルブロ', dot:'#8b7fe0', maxDepth:1, minDepth:1, defDepth:1, infinite:true },
+    { id:'sierpinski', name:'三角形',       dot:'#f2a65a', infinite:true },
+    { id:'koch',       name:'雪の結晶',     dot:'#8fd3ff', infinite:true },
+    { id:'mandelbrot', name:'マンデルブロ', dot:'#8b7fe0', infinite:false },
   ];
 
   const DESCRIPTIONS = {
-    tree: `<ruby>木</ruby><rt>き</rt>のえだが、<ruby>分</ruby><rt>わ</rt>かれてどんどん<ruby>増</ruby><rt>ふ</rt>えていく<ruby>形</ruby><rt>かたち</rt>だよ。<br><br>ズームすると、えだの<ruby>先</ruby><rt>さき</rt>にまた<ruby>同</ruby><rt>おな</rt>じような<ruby>分</ruby><rt>わ</rt>かれ<ruby>方</ruby><rt>かた</rt>がどんどん<ruby>出</ruby><rt>で</rt>てくるよ。`,
-    koch: `<ruby>三角形</ruby><rt>さんかくけい</rt>のまん<ruby>中</ruby><rt>なか</rt>に、また<ruby>三角形</ruby><rt>さんかくけい</rt>のでっぱりを<ruby>作</ruby><rt>つく</rt>ることを<ruby>繰</ruby><rt>く</rt>り<ruby>返</rt><rt>かえ</rt>すと、まるで<ruby>雪</ruby><rt>ゆき</rt>の<ruby>結晶</ruby><rt>けっしょう</rt>のような<ruby>形</ruby><rt>かたち</rt>になるよ。<br><br>これは<ruby>理論上</ruby><rt>りろんじょう</rt>どこまでもズームできて、いつでも<ruby>同</ruby><rt>おな</rt>じギザギザが<ruby>出</ruby><rt>で</rt>てくるよ。`,
-    sierpinski: `<ruby>大</ruby><rt>おお</rt>きな<ruby>三角形</ruby><rt>さんかくけい</rt>のまん<ruby>中</ruby><rt>なか</rt>を<ruby>穴</ruby><rt>あな</rt>あけて、のこった3つの<ruby>三角形</ruby><rt>さんかくけい</rt>でも<ruby>同</ruby><rt>おな</rt>じことを<ruby>繰</ruby><rt>く</rt>り<ruby>返</rt><rt>かえ</rt>す<ruby>図形</ruby><rt>ずけい</rt>だよ。<br><br>これも<ruby>理論上</ruby><rt>りろんじょう</rt>どこまでもズームできるよ。どんなに<ruby>拡大</ruby><rt>かくだい</rt>しても、また<ruby>三角形</ruby><rt>さんかくけい</rt>の<ruby>穴</ruby><rt>あな</rt>が<ruby>出</ruby><rt>で</rt>てくるよ。`,
-    circles: `1つの<ruby>丸</ruby><rt>まる</rt>のまわりに、<ruby>小</ruby><rt>ちい</rt>さい<ruby>丸</ruby><rt>まる</rt>をいくつも<ruby>並</ruby><rt>なら</rt>べることを<ruby>繰</ruby><rt>く</rt>り<ruby>返</rt><rt>かえ</rt>すと、お<ruby>花</ruby><rt>はな</rt>みたいな<ruby>模様</ruby><rt>もよう</rt>ができるよ。<br><br>ズームすると<ruby>小</ruby><rt>ちい</rt>さい<ruby>丸</ruby><rt>まる</rt>のまわりにまた<ruby>丸</ruby><rt>まる</rt>がどんどん<ruby>見</ruby><rt>み</rt>えてくるよ。`,
-    mandelbrot: `<ruby>数</ruby><rt>すう</rt><ruby>式</ruby><rt>しき</rt>を<ruby>使</ruby><rt>つか</rt>って<ruby>色</ruby><rt>いろ</rt>を<ruby>塗</ruby><rt>ぬ</rt>り<ruby>分</ruby><rt>わ</rt>けると<ruby>現</ruby><rt>あらわ</rt>れる、ふしぎな<ruby>図形</ruby><rt>ずけい</rt>だよ。<br><br>ゆびで<ruby>拡大</ruby><rt>かくだい</rt>すると、どこまでも<ruby>細</ruby><rt>こま</rt>かい<ruby>模様</ruby><rt>もよう</rt>が<ruby>出</ruby><rt>で</rt>てくるよ。これは<ruby>本当</ruby><rt>ほんとう</rt>に<ruby>無限</ruby><rt>むげん</rt>だよ。`,
+    koch: `<ruby>三角形<rt>さんかくけい</rt></ruby>のまん<ruby>中<rt>なか</rt></ruby>に、また<ruby>三角形<rt>さんかくけい</rt></ruby>のでっぱりを<ruby>作<rt>つく</rt></ruby>ることを<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>すと、<ruby>雪<rt>ゆき</rt></ruby>の<ruby>結晶<rt>けっしょう</rt></ruby>のような<ruby>形<rt>かたち</rt></ruby>になるよ。<br><br><ruby>線<rt>せん</rt></ruby>のところを<ruby>拡大<rt>かくだい</rt></ruby>すると、また<ruby>同<rt>おな</rt></ruby>じギザギザが<ruby>出<rt>で</rt></ruby>てくるよ。<ruby>何億倍<rt>なんおくばい</rt></ruby>にしても<ruby>終<rt>お</rt></ruby>わらないよ。`,
+    sierpinski: `<ruby>大<rt>おお</rt></ruby>きな<ruby>三角形<rt>さんかくけい</rt></ruby>のまん<ruby>中<rt>なか</rt></ruby>を<ruby>穴<rt>あな</rt></ruby>あけて、のこった3つの<ruby>三角形<rt>さんかくけい</rt></ruby>でも<ruby>同<rt>おな</rt></ruby>じことを<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>す<ruby>図形<rt>ずけい</rt></ruby>だよ。<br><br><ruby>色<rt>いろ</rt></ruby>のついたところを<ruby>拡大<rt>かくだい</rt></ruby>すると、また<ruby>三角形<rt>さんかくけい</rt></ruby>の<ruby>穴<rt>あな</rt></ruby>が<ruby>出<rt>で</rt></ruby>てくるよ。<ruby>何億倍<rt>なんおくばい</rt></ruby>にしても<ruby>終<rt>お</rt></ruby>わらないよ。`,
+    mandelbrot: `<ruby>数式<rt>すうしき</rt></ruby>を<ruby>使<rt>つか</rt></ruby>って<ruby>色<rt>いろ</rt></ruby>を<ruby>塗<rt>ぬ</rt></ruby>り<ruby>分<rt>わ</rt></ruby>けると<ruby>現<rt>あらわ</rt></ruby>れる<ruby>図形<rt>ずけい</rt></ruby>だよ。<br><br><ruby>拡大<rt>かくだい</rt></ruby>すると<ruby>似<rt>に</rt></ruby>た<ruby>形<rt>かたち</rt></ruby>が<ruby>出<rt>で</rt></ruby>てくるけど、<ruby>実<rt>じつ</rt></ruby>は<ruby>少<rt>すこ</rt></ruby>しずつちがう<ruby>形<rt>かたち</rt></ruby>なんだ。<ruby>他<rt>ほか</rt></ruby>の2つとくらべてみてね。`,
   };
 
-  /* ============ Canvas準備 ============ */
+  /* ============ Canvas ============ */
   const canvas = document.getElementById('stage');
   const ctx = canvas.getContext('2d');
-  let cw = 0, ch = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let cw = 0, ch = 0;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   function resizeCanvas(){
     const rect = canvas.getBoundingClientRect();
@@ -594,46 +558,259 @@
     renderCurrent();
   });
 
-  /* ============ 座標変換ヘルパー ============ */
-  // 論理座標(フラクタルを定義する -1..1くらいの正方形空間) → 画面ピクセル座標
-  function worldToScreen(x, y){
-    const scale = Math.min(cw,ch) / (state.view.halfW * 2);
-    const sx = cw/2 + (x - state.view.cx) * scale;
-    const sy = ch/2 + (y - state.view.cy) * scale;
-    return { x: sx, y: sy, scale };
+  /* ============ 座標変換 ============ */
+  let viewScale = 1;
+  function updateViewScale(){
+    viewScale = Math.min(cw,ch) / (state.view.halfW * 2);
   }
+  function wx(x){ return cw/2 + (x - state.view.cx) * viewScale; }
+  function wy(y){ return ch/2 + (y - state.view.cy) * viewScale; }
   function screenToWorld(sx, sy){
-    const scale = Math.min(cw,ch) / (state.view.halfW * 2);
-    const x = state.view.cx + (sx - cw/2) / scale;
-    const y = state.view.cy + (sy - ch/2) / scale;
-    return { x, y };
+    return {
+      x: state.view.cx + (sx - cw/2) / viewScale,
+      y: state.view.cy + (sy - ch/2) / viewScale
+    };
+  }
+
+  /* ============ 基準図形の初期化 ============ */
+  const BASE_SIZE = 1.6;
+  function makeBaseTriangle(){
+    const s = BASE_SIZE;
+    const h = s * Math.sqrt(3)/2;
+    return [
+      {x: 0,     y: -h*2/3},
+      {x: -s/2,  y:  h/3},
+      {x:  s/2,  y:  h/3}
+    ];
   }
 
   function resetView(){
     state.view = { cx: 0, cy: 0, halfW: 1 };
+    state.accumZoom = 1;
+    state.baseShape = makeBaseTriangle();
+    updateViewScale();
     updateZoomBadge();
   }
 
-  function updateZoomBadge(){
-    const zoom = 1 / state.view.halfW;
-    document.getElementById('zoom-badge').textContent = '×' + (zoom < 10 ? zoom.toFixed(1) : Math.round(zoom).toLocaleString());
+  /* ============ 無限ズーム: 座標系のリベース ============
+     ズームが一定を超えたら、画面中心を含む「子三角形」を選び、
+     それを基準サイズに正規化し直す(相似変換)。
+     単にhalfWをリセットするだけでは基準図形の座標自体が
+     発散してしまい精度が失われるため、必ず子図形を選んで
+     再正規化することが重要。
+     シェルピンスキーはこれがそのまま定義(3つの子三角形)。
+     コッホは同じ枠組みの三角形を「土台」として共有し、
+     描画時にその1辺を毎回コッホ曲線として展開する。
+  =========================================================== */
+  const REBASE_THRESHOLD = 0.45; // view.halfW がこれを下回ったらリベースを試みる
+  const REBASE_GUARD = 600;      // 吸着の繰り返し分も見込んだ安全上限
+
+  function nearestChildInfo(baseShape, cx, cy){
+    const [a,b,c] = baseShape;
+    const ab = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+    const bc = {x:(b.x+c.x)/2, y:(b.y+c.y)/2};
+    const ca = {x:(c.x+a.x)/2, y:(c.y+a.y)/2};
+    const candidates = [[a,ab,ca], [ab,b,bc], [ca,bc,c]];
+
+    let best = null, bestScore = -Infinity;
+    for(const t of candidates){
+      const [p1,p2,p3] = t;
+      const d = (p2.y-p3.y)*(p1.x-p3.x) + (p3.x-p2.x)*(p1.y-p3.y);
+      if(Math.abs(d) < 1e-15) continue; // 退化した三角形は判定不能なのでスキップ
+      const l1 = ((p2.y-p3.y)*(cx-p3.x) + (p3.x-p2.x)*(cy-p3.y)) / d;
+      const l2 = ((p3.y-p1.y)*(cx-p3.x) + (p1.x-p3.x)*(cy-p3.y)) / d;
+      const l3 = 1 - l1 - l2;
+      const score = Math.min(l1,l2,l3); // 一番小さい重心座標。正なら内部、負なら外側
+      if(score > bestScore){ bestScore = score; best = t; }
+    }
+    return { chosen: best, isInside: best ? bestScore > 0.001 : false };
+  }
+
+  /* コッホの「1辺」をコッホの1段階分解した4つの子セグメントを返す */
+  function kochChildSegments(p1, p2){
+    const dx=(p2.x-p1.x)/3, dy=(p2.y-p1.y)/3;
+    const pA={x:p1.x+dx,y:p1.y+dy}, pB={x:p1.x+2*dx,y:p1.y+2*dy};
+    const ang=Math.atan2(dy,dx)-Math.PI/3, d=Math.hypot(dx,dy);
+    const peak={x:pA.x+Math.cos(ang)*d,y:pA.y+Math.sin(ang)*d};
+    return [[p1,pA],[pA,peak],[peak,pB],[pB,p2]];
+  }
+
+  /* 視点に最も近い、土台三角形の「辺のコッホ子セグメント」を探す */
+  function nearestKochChildSegment(baseShape, cx, cy){
+    const [A,B,C] = baseShape;
+    const edges = [[A,B],[B,C],[C,A]];
+    let best=null, bestDist=Infinity;
+    for(const [p1,p2] of edges){
+      for(const [s1,s2] of kochChildSegments(p1,p2)){
+        const dx=s2.x-s1.x, dy=s2.y-s1.y, len2=dx*dx+dy*dy;
+        let t = len2<1e-20 ? 0 : ((cx-s1.x)*dx+(cy-s1.y)*dy)/len2;
+        t = Math.max(0, Math.min(1, t));
+        const px=s1.x+t*dx, py=s1.y+t*dy;
+        const d = Math.hypot(cx-px, cy-py);
+        if(d < bestDist){ bestDist = d; best = [s1,s2]; }
+      }
+    }
+    return best;
+  }
+
+  /* p1->p2 を q1->q2 に写す相似変換(平行移動+回転+拡大縮小)を作る */
+  function similarityTransform(p1, p2, q1, q2){
+    const pv = {x: p2.x-p1.x, y: p2.y-p1.y};
+    const qv = {x: q2.x-q1.x, y: q2.y-q1.y};
+    const pLen2 = pv.x*pv.x + pv.y*pv.y;
+    const a = (qv.x*pv.x + qv.y*pv.y) / pLen2;
+    const b = (qv.y*pv.x - qv.x*pv.y) / pLen2;
+    return function(p){
+      const dx = p.x - p1.x, dy = p.y - p1.y;
+      return { x: q1.x + a*dx - b*dy, y: q1.y + b*dx + a*dy };
+    };
+  }
+
+  /* 設計のポイント: 正規化は「選んだ子三角形の重心」を中心に行い、
+     視点(view.cx, view.cy)も同じ変換Tで追従させる。
+     視点の論理座標そのものは変化するが、画面上に描かれる位置
+     (wx(view.cx), wy(view.cy)) は変換の前後で完全に一致する
+     ——なぜなら view.halfW も同じ比率 k で一緒にスケールするため。
+     これにより、リベースが起きても画面の絵は一切ジャンプしない。
+
+     コッホ雪片は「線」でできているため、土台三角形の内部・外部の
+     判定(シェルピンスキー的な3分割)だけでは、視点が境界や
+     「穴」の近くにあるとリベースが止まってしまう。
+     そこで、通常の3分割で判定できない場合は、視点に最も近い
+     「辺のコッホ子セグメント」を見つけ、それを新しい基準の辺として
+     三角形全体を相似変換で作り直す。これにより、コッホの線が
+     図形のどこに分布していても、視点はその近くの線を辿り続けられる。 */
+  function maybeRebaseCoordinates(){
     const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    const limitBadge = document.getElementById('limit-badge');
-    // 木・花びらは画面ピクセルサイズ基準でかなり深くまで自動的に伸びるため、
-    // 安全上限(MAX_SAFE_DEPTH相当)に近づく非常に高いズームでのみ「そろそろ限界」を伝える
-    if(!def.infinite && zoom > 5000){
-      limitBadge.classList.add('show');
-      limitBadge.innerHTML = `<ruby>細<rt>こま</rt></ruby>かすぎて<ruby>描<rt>か</rt></ruby>くのが<ruby>大変<rt>たいへん</rt></ruby>になってきたよ`;
+    if(!def.infinite) return;
+
+    let guard = 0;
+    while(state.view.halfW < REBASE_THRESHOLD && guard < REBASE_GUARD){
+      guard++;
+      const { chosen, isInside } = nearestChildInfo(state.baseShape, state.view.cx, state.view.cy);
+
+      if(isInside){
+        const side = Math.hypot(chosen[1].x-chosen[0].x, chosen[1].y-chosen[0].y);
+        const k = BASE_SIZE / side;
+        const gx = (chosen[0].x+chosen[1].x+chosen[2].x)/3;
+        const gy = (chosen[0].y+chosen[1].y+chosen[2].y)/3;
+        const T = p => ({ x: (p.x-gx)*k, y: (p.y-gy)*k });
+
+        state.baseShape = chosen.map(T);
+        const nv = T({x: state.view.cx, y: state.view.cy});
+        state.view.cx = nv.x;
+        state.view.cy = nv.y;
+        state.view.halfW *= k;
+        state.accumZoom *= k;
+        continue;
+      }
+
+      // 三角形の内部ではない(境界や外側に近い)。
+      // コッホだけは、辺のコッホ子セグメントを基準にしたリベースにフォールバックする。
+      if(state.type !== 'koch') break; // シェルピンスキーはここで正しく止まる(穴は本当に空)
+
+      const seg = nearestKochChildSegment(state.baseShape, state.view.cx, state.view.cy);
+      const [s1, s2] = seg;
+      const segLen = Math.hypot(s2.x-s1.x, s2.y-s1.y);
+      if(segLen < 1e-300) break; // 数値的に扱えないほど小さい場合の安全策
+
+      const [A, B] = state.baseShape;
+      const origAngle = Math.atan2(B.y-A.y, B.x-A.x); // 補正の基準となる、直前の向き
+
+      const transform = similarityTransform(A, B, s1, s2);
+      const transformedBase = state.baseShape.map(transform);
+      const transformedView = transform({x: state.view.cx, y: state.view.cy});
+
+      // 上のtransformはA->Bをs1->s2(元の1/3サイズ)に写すので、
+      // 改めてBASE_SIZEへ正規化する追加のスケーリングを行う
+      const scaleUp = BASE_SIZE / segLen;
+      const center = transformedBase[0];
+      const scaleFrom = p => ({ x: center.x + (p.x-center.x)*scaleUp, y: center.y + (p.y-center.y)*scaleUp });
+      let newBase = transformedBase.map(scaleFrom);
+      let newView = scaleFrom(transformedView);
+
+      /* コッホ曲線の4つの子セグメントは元の辺に対してそれぞれ異なる角度
+         (0度、+60度、-60度、0度)を持つため、選んだ子セグメントによって
+         基準三角形が回転してしまう。何もしないと数回のリベースごとに
+         三角形がひっくり返って見え、「三角、逆三角」というちらつきになる。
+         そこで、新しい基準三角形の向きを、直前の基準三角形と同じ向きに
+         そろえる補正回転を追加で掛ける。視点が実際にたどる位置(見た目)は
+         変えず、基準三角形の「向き」だけを固定することで、
+         ズーム時の見た目が滑らかにつながるようにしている。 */
+      const newAngle = Math.atan2(newBase[1].y-newBase[0].y, newBase[1].x-newBase[0].x);
+      const correction = origAngle - newAngle;
+      const cosC = Math.cos(correction), sinC = Math.sin(correction);
+      const pivot = newBase[0];
+      const rotate = p => {
+        const dx = p.x-pivot.x, dy = p.y-pivot.y;
+        return { x: pivot.x + dx*cosC - dy*sinC, y: pivot.y + dx*sinC + dy*cosC };
+      };
+      newBase = newBase.map(rotate);
+      newView = rotate(newView);
+
+      state.baseShape = newBase;
+      state.view.cx = newView.x;
+      state.view.cy = newView.y;
+      state.view.halfW *= scaleUp;
+      state.accumZoom *= scaleUp;
+    }
+    updateViewScale();
+  }
+
+  function currentZoom(){
+    return state.accumZoom / state.view.halfW;
+  }
+
+  /* 初期表示(ズームしていない状態)ではシンプルに2段階くらいの浅い形を見せ、
+     ズームが進むにつれて本来の細かさ(MIN_PIXEL=2.0)まで解禁していく。
+     こうすることで「最初は浅く、拡大するほど細かくなる」という
+     直感的な体験になる。 */
+  function adaptiveMinPixel(basePixel, shallowPixel){
+    const zoom = currentZoom();
+    const t = Math.min(1, Math.log10(zoom+1) / 2); // zoom=100でt=1(本来の細かさに到達)
+    return shallowPixel * (1-t) + basePixel * t;
+  }
+
+  function formatZoom(z){
+    if(!isFinite(z)) return `けたちがいすぎ<ruby>拡大<rt>かくだい</rt></ruby>`;
+    if(z < 10) return z.toFixed(1);
+    if(z < 1e4) return Math.round(z).toLocaleString();
+    if(z < 1e8) return Math.round(z).toLocaleString();
+    if(z < 1e12) return (z/1e8).toFixed(1) + '<b>億</b>';
+    if(z < 1e16) return (z/1e12).toFixed(1) + '<b>兆</b>';
+    if(z < 1e60) return z.toExponential(1);
+    return `けたちがいすぎ<ruby>拡大<rt>かくだい</rt></ruby>`;
+  }
+
+  function updateZoomBadge(){
+    document.getElementById('zoom-badge').innerHTML = '×' + formatZoom(currentZoom());
+  }
+
+  let guideState = '';
+  function setEmptyGuide(isEmpty){
+    const badge = document.getElementById('limit-badge');
+    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
+    let next = '';
+    if(isEmpty){
+      next = `ここには<ruby>何<rt>なに</rt></ruby>も<ruby>無<rt>な</rt></ruby>いよ。⟲でもどってね`;
+    } else if(!def.infinite && currentZoom() > 150000){
+      next = `そろそろ<ruby>拡大<rt>かくだい</rt></ruby>のかぎりだよ`;
+    }
+    if(next === guideState) return;
+    guideState = next;
+    if(next){
+      badge.innerHTML = next;
+      badge.classList.add('show');
     } else {
-      limitBadge.classList.remove('show');
+      badge.classList.remove('show');
     }
   }
 
-  /* ============ UI: タブ ============ */
+  /* ============ タブ ============ */
   const tabsEl = document.getElementById('tabs');
   FRACTAL_TYPES.forEach(t=>{
     const btn = document.createElement('button');
-    btn.className = 'tab-btn' + (t.id === state.type ? ' active' : '');
+    btn.className = 'tab-btn';
     btn.dataset.id = t.id;
     btn.innerHTML = `<span class="dot" style="background:${t.dot}"></span>${t.name}`;
     btn.addEventListener('click', ()=> selectType(t.id));
@@ -642,53 +819,17 @@
 
   function selectType(id){
     state.type = id;
-    const def = FRACTAL_TYPES.find(t=>t.id===id);
-    state.depth = def.defDepth;
-    state.progress = 0;
-    state.playing = state.animOn;
     resetView();
     document.querySelectorAll('.tab-btn').forEach(b=>{
       b.classList.toggle('active', b.dataset.id === id);
     });
-    document.getElementById('depth-val').value = state.depth;
-    document.getElementById('depth-section').style.display = (id === 'mandelbrot') ? 'none' : '';
     document.getElementById('desc-box').innerHTML = DESCRIPTIONS[id];
-    document.getElementById('stage-hint').textContent = 'ゆびでなぞると移動、2本ゆびでズームできるよ';
+    guideState = '__force__';
     updateBadge();
     renderCurrent();
   }
 
-  /* ============ UI: スピード ============ */
-  const speedVal = document.getElementById('speed-val');
-  document.getElementById('speed-up').addEventListener('click', ()=>{
-    state.speed = Math.min(5, state.speed+1);
-    speedVal.value = state.speed;
-  });
-  document.getElementById('speed-down').addEventListener('click', ()=>{
-    state.speed = Math.max(1, state.speed-1);
-    speedVal.value = state.speed;
-  });
-
-  /* ============ UI: ふかさ ============ */
-  const depthVal = document.getElementById('depth-val');
-  document.getElementById('depth-up').addEventListener('click', ()=>{
-    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    state.depth = Math.min(def.maxDepth, state.depth+1);
-    depthVal.value = state.depth;
-    state.progress = 0;
-    state.playing = state.animOn;
-    updateZoomBadge();
-  });
-  document.getElementById('depth-down').addEventListener('click', ()=>{
-    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    state.depth = Math.max(def.minDepth, state.depth-1);
-    depthVal.value = state.depth;
-    state.progress = 0;
-    state.playing = state.animOn;
-    updateZoomBadge();
-  });
-
-  /* ============ UI: 色 ============ */
+  /* ============ 色 ============ */
   const swatchWrap = document.getElementById('color-swatches');
   COLOR_THEMES.forEach((c, i)=>{
     const sw = document.createElement('div');
@@ -697,28 +838,18 @@
     sw.addEventListener('click', ()=>{
       state.colorIdx = i;
       document.querySelectorAll('.swatch').forEach((s,idx)=> s.classList.toggle('active', idx===i));
-      if(state.type === 'mandelbrot') renderCurrent();
+      renderCurrent();
     });
     swatchWrap.appendChild(sw);
   });
 
-  /* ============ UI: アニメON/OFF ============ */
-  const animToggle = document.getElementById('anim-toggle');
-  animToggle.addEventListener('click', ()=>{
-    state.animOn = !state.animOn;
-    animToggle.classList.toggle('on', state.animOn);
-    if(state.animOn && state.progress < 1) state.playing = true;
-  });
-
-  /* ============ UI: もう一度 ============ */
+  /* ============ さいしょの表示にもどす ============ */
   document.getElementById('replay-btn').addEventListener('click', ()=>{
-    state.progress = 0;
-    state.playing = state.animOn;
     resetView();
     renderCurrent();
   });
 
-  /* ============ UI: 保存 ============ */
+  /* ============ 保存 ============ */
   document.getElementById('save-btn').addEventListener('click', ()=>{
     const link = document.createElement('a');
     link.download = 'fractal-' + state.type + '.png';
@@ -726,26 +857,23 @@
     link.click();
   });
 
-  /* ============ UI: ズームボタン ============ */
-  function zoomBy(factor){
-    state.view.halfW = Math.max(getMinHalfW(), Math.min(2, state.view.halfW * factor));
-    updateZoomBadge();
-    renderCurrent();
+  /* ============ ズーム ============ */
+  const MAX_HALF_W = 2;
+  // 無限ズーム対応の図形は下限を設けない(座標系リセットで精度を保つため)。
+  // マンデルブロだけは数式の性質上リセットできないので、精度が崩れる手前で止める。
+  function minHalfW(){
+    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
+    return def.infinite ? 1e-6 : 4e-6;
   }
-  function getMinHalfW(){
-    // マンデルブロは無限にズームできるが、精度限界を考慮して下限を設定
-    if(state.type === 'mandelbrot') return 0.000005;
-    // 木・花びらも画面ピクセル基準で深くまで自動的に伸びるので、他と同程度までズームを許可
-    return 0.00001;
+  function clampHalfW(v){
+    return Math.max(minHalfW(), Math.min(MAX_HALF_W, v));
   }
-  document.getElementById('zoom-in').addEventListener('click', ()=> zoomBy(0.7));
-  document.getElementById('zoom-out').addEventListener('click', ()=> zoomBy(1/0.7));
   document.getElementById('zoom-reset').addEventListener('click', ()=>{
     resetView();
     renderCurrent();
   });
 
-  /* ============ UI: パネル開閉(モバイル) ============ */
+  /* ============ パネル ============ */
   const panel = document.getElementById('panel');
   const panelOverlay = document.getElementById('panel-overlay');
   document.getElementById('panel-toggle').addEventListener('click', ()=>{
@@ -769,337 +897,281 @@
     }
   });
 
-  /* ============ バッジ ============ */
   function updateBadge(){
     const def = FRACTAL_TYPES.find(t=>t.id===state.type);
     document.getElementById('stat-badge').textContent = def.name + ' を見ているよ';
   }
 
-  /* ============ 色の混合ヘルパー ============ */
+  /* ============ 色ヘルパー ============ */
   function hexToRgb(hex){
     const v = parseInt(hex.replace('#',''),16);
     return { r:(v>>16)&255, g:(v>>8)&255, b:v&255 };
   }
   function mixColor(hexA, hexB, t){
     const a = hexToRgb(hexA), b = hexToRgb(hexB);
-    const r = Math.round(a.r + (b.r-a.r)*t);
-    const g = Math.round(a.g + (b.g-a.g)*t);
-    const bl = Math.round(a.b + (b.b-a.b)*t);
-    return `rgb(${r},${g},${bl})`;
+    return `rgb(${Math.round(a.r+(b.r-a.r)*t)},${Math.round(a.g+(b.g-a.g)*t)},${Math.round(a.b+(b.b-a.b)*t)})`;
   }
 
-  /* ============ 描画: 木 ============ */
-  // 論理空間: 幹の根本を(0, 1)、上方向がマイナスy、で正規化して描く
-  // ふかさ設定は「最初にどこまで一気に見せるか」の初期段階として使い、
-  // それより先はズームすればするほど画面ピクセルサイズ基準で自動的に伸びる(無限に近い自己相似の体感)
-  function drawTree(p){
+  /* ============ 描画: コッホ雪片 ============ */
+  const KOCH_MIN_PIXEL = 2.0;
+  const KOCH_MAX_DEPTH = 60;
+  const KOCH_MARGIN = 60;
+
+  function drawKoch(){
     const theme = COLOR_THEMES[state.colorIdx];
     ctx.clearRect(0,0,cw,ch);
-    const totalDepth = state.depth;
-    const startX = 0, startY = 1;
-    const baseLen = 0.9;
-    const MAX_SAFE_DEPTH = 26; // 再帰の安全上限(計算量の暴走防止)
-    const MIN_PIXEL_LEN = 1.2; // これより短い枝は画面上で意味が無いので打ち切り
+    const [A,B,C] = state.baseShape;
+    const minPixel = adaptiveMinPixel(KOCH_MIN_PIXEL, 130);
 
-    function branch(x, y, len, angle, depth){
-      if(len < 0.00001 || depth > MAX_SAFE_DEPTH) return;
+    ctx.lineJoin='round';
+    ctx.lineCap='round';
+    ctx.lineWidth = 2.2;
+    let drawnCount = 0;
 
-      // アニメーション進捗: 最初のtotalDepth段は順番に生える演出、それ以降は即時表示
-      let localP = 1;
-      if(depth < totalDepth){
-        const startFrac = depth / totalDepth;
-        const endFrac = (depth + 1) / totalDepth;
-        localP = (p - startFrac) / (endFrac - startFrac);
-        localP = Math.max(0, Math.min(1, localP));
-        if(localP <= 0) return;
-      } else if(p < 1){
-        // 初期段階の育成アニメーションが終わるまで、その先の枝は出さない
-        return;
-      }
-
-      const ex = x + Math.cos(angle) * len * localP;
-      const ey = y + Math.sin(angle) * len * localP;
-
-      const s1 = worldToScreen(x,y), s2 = worldToScreen(ex,ey);
-      const pixelLen = Math.hypot(s2.x-s1.x, s2.y-s1.y);
-      const onScreen = !(Math.max(s1.x,s2.x) < -20 || Math.min(s1.x,s2.x) > cw+20 ||
-                          Math.max(s1.y,s2.y) < -20 || Math.min(s1.y,s2.y) > ch+20);
-      if(onScreen){
-        const t = 1 - 1/(1 + depth*0.35);
-        ctx.strokeStyle = mixColor(theme.sub, theme.main, Math.min(1,t));
-        ctx.lineWidth = Math.max(0.8, len * s1.scale * 0.09);
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(s1.x,s1.y);
-        ctx.lineTo(s2.x,s2.y);
-        ctx.stroke();
-      }
-
-      // 画面上で十分な長さが残っている(=ズームしてよく見えている)限り枝分かれを続ける
-      if(localP >= 0.999 && (pixelLen > MIN_PIXEL_LEN || depth < totalDepth)){
-        const newLen = len * 0.72;
-        branch(ex, ey, newLen, angle - 0.5, depth+1);
-        branch(ex, ey, newLen, angle + 0.5, depth+1);
-        if(depth % 3 === 0){
-          branch(ex, ey, newLen*0.85, angle, depth+1);
-        }
-      }
-    }
-    branch(startX, startY, baseLen, -Math.PI/2, 0);
-  }
-
-  /* ============ 描画: コッホ雪片(無限ズーム対応) ============ */
-  // 論理空間: 一辺2の正三角形を中心に配置
-  // 打ち切り条件は「画面上のセグメントの長さ」基準にする(ズーム量に天井を作らない)
-  const KOCH_MIN_PIXEL_LEN = 1.0;
-  const KOCH_MAX_SAFE_DEPTH = 30; // 再帰の安全上限(座標が壊れる/無意味になる前に止める)
-  function kochRecurse(p1, p2, animLocalP0, animLocalP1, depth, depthCap, drawFn){
-    const s1 = worldToScreen(p1.x, p1.y), s2 = worldToScreen(p2.x, p2.y);
-    const pixelLen = Math.hypot(s2.x-s1.x, s2.y-s1.y);
-    const offscreen = (Math.max(s1.x,s2.x) < -40 || Math.min(s1.x,s2.x) > cw+40 ||
-                        Math.max(s1.y,s2.y) < -40 || Math.min(s1.y,s2.y) > ch+40);
-
-    if(depth >= depthCap || depth >= KOCH_MAX_SAFE_DEPTH || (pixelLen < KOCH_MIN_PIXEL_LEN)){
-      drawFn(p1, p2, animLocalP1, s1, s2, depth);
-      return;
-    }
-    const dx = (p2.x - p1.x)/3, dy = (p2.y - p1.y)/3;
-    const pA = {x: p1.x+dx, y: p1.y+dy};
-    const pB = {x: p1.x+2*dx, y: p1.y+2*dy};
-    const angle = Math.atan2(dy,dx) - Math.PI/3;
-    const dist = Math.hypot(dx,dy);
-    const pPeak = { x: pA.x + Math.cos(angle)*dist, y: pA.y + Math.sin(angle)*dist };
-
-    const mid0 = animLocalP0, mid1 = animLocalP1;
-    const q = mid0 + (mid1-mid0)*0.25;
-    const r = mid0 + (mid1-mid0)*0.5;
-    const s = mid0 + (mid1-mid0)*0.75;
-
-    kochRecurse(p1, pA, mid0, q, depth+1, depthCap, drawFn);
-    kochRecurse(pA, pPeak, q, r, depth+1, depthCap, drawFn);
-    kochRecurse(pPeak, pB, r, s, depth+1, depthCap, drawFn);
-    kochRecurse(pB, p2, s, mid1, depth+1, depthCap, drawFn);
-  }
-  function drawKoch(p){
-    const theme = COLOR_THEMES[state.colorIdx];
-    ctx.clearRect(0,0,cw,ch);
-    const size = 1.3;
-    const h = size * Math.sqrt(3)/2;
-    const p1 = {x: 0, y: -h*2/3};
-    const p2 = {x: -size/2, y: h/3};
-    const p3 = {x: size/2, y: h/3};
-
-    // 初期の育成アニメーションは「ふかさ」設定の段数ぶんだけ順番に見せる。
-    // アニメが終わったあとは、ズーム量に応じて自動でそれより先まで細分化される(無限ズーム表現)
-    const introDepth = state.depth;
-    const animDone = (p >= 1);
-
-    ctx.lineJoin='round'; ctx.lineCap='round';
-    const edges = [[p1,p2],[p2,p3],[p3,p1]];
+    const edges = [[A,B],[B,C],[C,A]];
     edges.forEach((edge, i)=>{
-      const color = i===0? theme.main : (i===1? mixColor(theme.main, theme.sub, 0.5) : theme.sub);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = i===0 ? theme.main
+                      : i===1 ? mixColor(theme.main, theme.sub, 0.5)
+                      : theme.sub;
       ctx.beginPath();
       let started = false;
-      const depthCap = animDone ? KOCH_MAX_SAFE_DEPTH : Math.ceil(introDepth) + 1;
-      kochRecurse(edge[0], edge[1], 0, 1, 0, depthCap, (a,b,localEndP,sa,sb,depth)=>{
-        if(!animDone){
-          // イントロ中は段数ベースの進捗で打ち切り、細分化しすぎない
-          const stepP = Math.min(1, p * introDepth);
-          if(localEndP > stepP + 0.02) return;
+
+      function seg(p1, p2, depth){
+        const x1 = wx(p1.x), y1 = wy(p1.y);
+        const x2 = wx(p2.x), y2 = wy(p2.y);
+
+        // 画面外は再帰を打ち切る(これがないと処理が爆発する)
+        const offscreen =
+          (Math.max(x1,x2) < -KOCH_MARGIN) || (Math.min(x1,x2) > cw+KOCH_MARGIN) ||
+          (Math.max(y1,y2) < -KOCH_MARGIN) || (Math.min(y1,y2) > ch+KOCH_MARGIN);
+
+        const pixelLen = Math.hypot(x2-x1, y2-y1);
+
+        if(offscreen || pixelLen < minPixel || depth >= KOCH_MAX_DEPTH){
+          if(!started){ ctx.moveTo(x1,y1); started = true; }
+          ctx.lineTo(x2,y2);
+          if(!offscreen) drawnCount++;
+          return;
         }
-        if(!started){ ctx.moveTo(sa.x,sa.y); started = true; }
-        ctx.lineTo(sb.x, sb.y);
-      });
+
+        const dx = (p2.x - p1.x)/3, dy = (p2.y - p1.y)/3;
+        const pA = {x: p1.x+dx,   y: p1.y+dy};
+        const pB = {x: p1.x+2*dx, y: p1.y+2*dy};
+        const ang = Math.atan2(dy,dx) - Math.PI/3;
+        const d = Math.hypot(dx,dy);
+        const peak = {x: pA.x + Math.cos(ang)*d, y: pA.y + Math.sin(ang)*d};
+
+        seg(p1, pA, depth+1);
+        seg(pA, peak, depth+1);
+        seg(peak, pB, depth+1);
+        seg(pB, p2, depth+1);
+      }
+
+      seg(edge[0], edge[1], 0);
       ctx.stroke();
     });
+
+    setEmptyGuide(drawnCount === 0 && currentZoom() > 2);
   }
 
-  /* ============ 描画: シェルピンスキー(無限ズーム対応) ============ */
-  // ふかさ設定は初期の育成演出の段数。演出が終わったあとは、
-  // 画面上の三角形の大きさ(ピクセル)を基準に、ズームするほど自動で先まで細分化する
-  const SIER_MIN_PIXEL = 1.2;
-  const SIER_MAX_SAFE_DEPTH = 34;
-  function drawSierpinski(p){
+  /* ============ 描画: シェルピンスキー三角形 ============ */
+  const SIER_MIN_PIXEL = 2.0;
+  const SIER_MAX_DEPTH = 60;
+  const SIER_MARGIN = 40;
+
+  function drawSierpinski(){
     const theme = COLOR_THEMES[state.colorIdx];
     ctx.clearRect(0,0,cw,ch);
-    const size = 1.8;
-    const h = size * Math.sqrt(3)/2;
-    const top = {x:0, y: -h*2/3};
-    const left = {x:-size/2, y: h/3};
-    const right = {x:size/2, y: h/3};
-
-    const introDepth = state.depth;
-    const animDone = (p >= 1);
+    const [top,left,right] = state.baseShape;
+    const minPixel = adaptiveMinPixel(SIER_MIN_PIXEL, 260);
+    let drawnCount = 0;
 
     function tri(a,b,c,depth){
-      const sa = worldToScreen(a.x,a.y), sb = worldToScreen(b.x,b.y), sc = worldToScreen(c.x,c.y);
-      const minX = Math.min(sa.x,sb.x,sc.x), maxX = Math.max(sa.x,sb.x,sc.x);
-      const minY = Math.min(sa.y,sb.y,sc.y), maxY = Math.max(sa.y,sb.y,sc.y);
-      const offscreen = (maxX < -20 || minX > cw+20 || maxY < -20 || minY > ch+20);
+      const ax = wx(a.x), ay = wy(a.y);
+      const bx = wx(b.x), by = wy(b.y);
+      const cx2 = wx(c.x), cy2 = wy(c.y);
+
+      const minX = Math.min(ax,bx,cx2), maxX = Math.max(ax,bx,cx2);
+      const minY = Math.min(ay,by,cy2), maxY = Math.max(ay,by,cy2);
+
+      // 画面外は完全に打ち切り
+      if(maxX < -SIER_MARGIN || minX > cw+SIER_MARGIN ||
+         maxY < -SIER_MARGIN || minY > ch+SIER_MARGIN) return;
+
       const pixelSize = Math.max(maxX-minX, maxY-minY);
+      const isLeaf = (pixelSize < minPixel) || (depth >= SIER_MAX_DEPTH);
 
-      // イントロ中は段数ベースの進捗、完了後はピクセルサイズ基準でどこまで潜るか決める
-      let localP = 1;
-      if(!animDone){
-        const stepDepth = Math.min(introDepth, depth+1);
-        const startFrac = depth/(introDepth+0.0001);
-        const endFrac = (depth+1)/(introDepth+0.0001);
-        localP = (p - startFrac)/(endFrac-startFrac);
-        localP = Math.max(0, Math.min(1, localP));
-        if(localP <= 0) return;
-      }
-
-      const isLeaf = (!animDone && depth >= introDepth) ||
-                     (animDone && (pixelSize < SIER_MIN_PIXEL || depth >= SIER_MAX_SAFE_DEPTH));
-
-      if((isLeaf || localP < 1) && !offscreen){
-        const t = 1 - 1/(1+depth*0.25);
-        ctx.fillStyle = mixColor(theme.sub, theme.main, Math.min(1,t));
-        ctx.globalAlpha = localP;
+      if(isLeaf){
+        const t = 1 - 1/(1 + depth*0.28);
+        ctx.strokeStyle = mixColor(theme.sub, theme.main, Math.min(1,t));
+        ctx.lineWidth = Math.max(1, Math.min(2.5, pixelSize*0.04));
+        ctx.lineJoin = 'round';
         ctx.beginPath();
-        ctx.moveTo(sa.x,sa.y); ctx.lineTo(sb.x,sb.y); ctx.lineTo(sc.x,sc.y);
+        ctx.moveTo(ax,ay);
+        ctx.lineTo(bx,by);
+        ctx.lineTo(cx2,cy2);
         ctx.closePath();
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        ctx.stroke();
+        drawnCount++;
+        return;
       }
-      if(isLeaf || localP < 1) return;
 
       const ab = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
       const bc = {x:(b.x+c.x)/2, y:(b.y+c.y)/2};
       const ca = {x:(c.x+a.x)/2, y:(c.y+a.y)/2};
-      tri(a, ab, ca, depth+1);
-      tri(ab, b, bc, depth+1);
-      tri(ca, bc, c, depth+1);
+      tri(a,  ab, ca, depth+1);
+      tri(ab, b,  bc, depth+1);
+      tri(ca, bc, c,  depth+1);
     }
+
     tri(top, left, right, 0);
+    setEmptyGuide(drawnCount === 0 && currentZoom() > 2);
   }
 
-  /* ============ 描画: 花びら(円の再帰) ============ */
-  // ふかさ設定は初期の育成演出の段数。それ以降はズームするほど画面ピクセル半径基準で自動的に増え続ける
-  function drawCircles(p){
-    const theme = COLOR_THEMES[state.colorIdx];
-    ctx.clearRect(0,0,cw,ch);
-    const totalDepth = state.depth;
-    const baseR = 0.62;
-    const MAX_SAFE_DEPTH = 22;
-    const MIN_PIXEL_R = 1.5;
+  /* ============ 描画: マンデルブロ(軽量化版) ============
+     ・段階的レンダリング: まず粗く描いて即座に表示、その後細かく描き直す
+     ・周期チェックで内部領域の反復を早期終了
+     ・行単位でチャンク処理し、UIをブロックしない
+  ============================================================ */
+  let mbToken = 0;
 
-    function circ(x,y,r,depth,hueT){
-      if(r < 0.000001 || depth > MAX_SAFE_DEPTH) return;
-
-      let localP = 1;
-      if(depth < totalDepth){
-        const startFrac = depth/totalDepth;
-        const endFrac = (depth+1)/totalDepth;
-        localP = (p - startFrac)/(endFrac-startFrac);
-        localP = Math.max(0, Math.min(1, localP));
-        if(localP<=0) return;
-      } else if(p < 1){
-        return;
-      }
-
-      const s = worldToScreen(x,y);
-      const rPix = r * s.scale;
-      const onscreen = !(s.x+rPix < -20 || s.x-rPix > cw+20 || s.y+rPix < -20 || s.y-rPix > ch+20);
-      if(onscreen){
-        ctx.strokeStyle = mixColor(theme.sub, theme.main, hueT % 1);
-        ctx.lineWidth = Math.max(0.8, rPix*0.05);
-        ctx.beginPath();
-        ctx.arc(s.x,s.y,rPix, -Math.PI/2, -Math.PI/2 + Math.PI*2*localP);
-        ctx.stroke();
-      }
-
-      if(localP >= 0.999 && (rPix > MIN_PIXEL_R || depth < totalDepth)){
-        const n = 6;
-        const newR = r*0.42;
-        for(let i=0;i<n;i++){
-          const a = (Math.PI*2/n)*i;
-          circ(x + Math.cos(a)*r*0.85, y + Math.sin(a)*r*0.85, newR, depth+1, hueT+0.15);
-        }
-      }
-    }
-    circ(0,0,baseR, 0, 0);
-  }
-
-  /* ============ 描画: マンデルブロ ============ */
-  let mbWorking = false;
-  let mbNeedsRedraw = false;
   function drawMandelbrot(){
-    if(mbWorking){ mbNeedsRedraw = true; return; }
-    mbWorking = true;
-    setTimeout(()=>{
-      const w = Math.round(cw), h = Math.round(ch);
-      const imgData = ctx.createImageData(w, h);
-      const data = imgData.data;
-      const theme = COLOR_THEMES[state.colorIdx];
-      const mainRgb = hexToRgb(theme.main);
-      const subRgb = hexToRgb(theme.sub);
-      // state.view(論理座標: 中心±halfW)をマンデルブロ座標系にマッピング
-      // 基準: view.halfW=1 のとき、複素平面のスケール3.2、中心(-0.5,0)
-      const mbCx = -0.5 + state.view.cx * 1.6;
-      const mbCy = state.view.cy * 1.6;
-      const mbScale = state.view.halfW * 3.2;
-      const maxIter = Math.min(400, 80 + Math.floor(Math.log2(1/state.view.halfW+1) * 40));
+    const myToken = ++mbToken;
+    const theme = COLOR_THEMES[state.colorIdx];
+    const mainRgb = hexToRgb(theme.main);
+    const subRgb = hexToRgb(theme.sub);
 
-      for(let py=0; py<h; py++){
-        const y0 = mbCy + (py/h - 0.5) * mbScale;
-        for(let px=0; px<w; px++){
-          const x0 = mbCx + (px/w - 0.5) * mbScale * (w/h);
-          let x=0, y=0, iter=0;
-          while(x*x+y*y <= 4 && iter < maxIter){
-            const xt = x*x - y*y + x0;
-            y = 2*x*y + y0;
-            x = xt;
-            iter++;
-          }
-          const idx = (py*w+px)*4;
-          if(iter === maxIter){
-            data[idx]=10; data[idx+1]=14; data[idx+2]=19; data[idx+3]=255;
-          } else {
-            const t = iter / maxIter;
-            const tt = Math.sqrt(t);
-            data[idx]   = Math.round(subRgb.r + (mainRgb.r-subRgb.r)*tt);
-            data[idx+1] = Math.round(subRgb.g + (mainRgb.g-subRgb.g)*tt);
-            data[idx+2] = Math.round(subRgb.b + (mainRgb.b-subRgb.b)*tt);
-            data[idx+3] = 255;
+    const mbCx = -0.5 + state.view.cx * 1.6;
+    const mbCy = state.view.cy * 1.6;
+    const mbScale = state.view.halfW * 3.2;
+    const zoom = 1/state.view.halfW;
+    const maxIter = Math.min(260, 70 + Math.floor(Math.log2(zoom+1) * 18));
+
+    // 段階的に解像度を上げる: 粗い→細かい
+    const passes = [6, 2, 1];
+    let passIdx = 0;
+
+    const off = document.createElement('canvas');
+    const offCtx = off.getContext('2d');
+
+    function runPass(){
+      if(myToken !== mbToken) return; // 新しい描画要求が来たら中断
+
+      const step = passes[passIdx];
+      const w = Math.max(1, Math.ceil(cw/step));
+      const h = Math.max(1, Math.ceil(ch/step));
+      off.width = w; off.height = h;
+      const imgData = offCtx.createImageData(w, h);
+      const data = imgData.data;
+      const aspect = w/h;
+
+      let py = 0;
+      const ROWS_PER_CHUNK = Math.max(8, Math.floor(4000/w));
+
+      function chunk(){
+        if(myToken !== mbToken) return;
+        const end = Math.min(h, py + ROWS_PER_CHUNK);
+
+        for(; py<end; py++){
+          const y0 = mbCy + (py/h - 0.5) * mbScale;
+          for(let px=0; px<w; px++){
+            const x0 = mbCx + (px/w - 0.5) * mbScale * aspect;
+
+            let x=0, y=0, x2=0, y2=0, iter=0;
+            // 周期検出用(内部の点を早期に判定して反復を打ち切る)
+            let ox=0, oy=0, checkCounter=0, checkLimit=8;
+
+            while(x2+y2 <= 4 && iter < maxIter){
+              y = 2*x*y + y0;
+              x = x2 - y2 + x0;
+              x2 = x*x; y2 = y*y;
+              iter++;
+
+              // 軌道が過去の位置とほぼ一致したら周期に入った=内部の点
+              if(Math.abs(x-ox) < 1e-11 && Math.abs(y-oy) < 1e-11){
+                iter = maxIter;
+                break;
+              }
+              if(++checkCounter >= checkLimit){
+                checkCounter = 0;
+                checkLimit *= 2;
+                ox = x; oy = y;
+              }
+            }
+
+            const idx = (py*w+px)*4;
+            if(iter >= maxIter){
+              data[idx]=10; data[idx+1]=14; data[idx+2]=19; data[idx+3]=255;
+            } else {
+              const tt = Math.sqrt(iter/maxIter);
+              data[idx]   = Math.round(subRgb.r + (mainRgb.r-subRgb.r)*tt);
+              data[idx+1] = Math.round(subRgb.g + (mainRgb.g-subRgb.g)*tt);
+              data[idx+2] = Math.round(subRgb.b + (mainRgb.b-subRgb.b)*tt);
+              data[idx+3] = 255;
+            }
           }
         }
+
+        if(py < h){
+          setTimeout(chunk, 0);
+          return;
+        }
+
+        // このパスの完成: 画面に転送
+        offCtx.putImageData(imgData, 0, 0);
+        ctx.setTransform(1,0,0,1,0,0);
+        ctx.imageSmoothingEnabled = (step > 1);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+
+        passIdx++;
+        if(passIdx < passes.length){
+          document.getElementById('stat-badge').textContent = 'マンデルブロ をきれいにしているよ…';
+          setTimeout(runPass, 0);
+        } else {
+          updateBadge();
+          setEmptyGuide(false);
+        }
       }
-      ctx.setTransform(1,0,0,1,0,0);
-      ctx.putImageData(imgData, 0, 0);
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      mbWorking = false;
-      updateBadge();
-      if(mbNeedsRedraw){ mbNeedsRedraw = false; drawMandelbrot(); }
-    }, 10);
+
+      chunk();
+    }
+
+    runPass();
   }
 
-  /* ============ 共通描画ディスパッチ ============ */
+  /* ============ 描画ディスパッチ ============ */
   function renderCurrent(){
+    updateViewScale();
     switch(state.type){
-      case 'tree': drawTree(state.progress); break;
-      case 'koch': drawKoch(state.progress); break;
-      case 'sierpinski': drawSierpinski(state.progress); break;
-      case 'circles': drawCircles(state.progress); break;
+      case 'koch':       drawKoch(); break;
+      case 'sierpinski': drawSierpinski(); break;
       case 'mandelbrot': drawMandelbrot(); break;
     }
   }
 
-  /* ============ ドラッグ・ピンチ操作(全図形共通) ============ */
-  function getTouchDist(t0,t1){
-    return Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
+  let throttled = false;
+  function renderThrottled(){
+    if(state.type === 'mandelbrot') return; // 操作終了時のみ再計算
+    if(throttled) return;
+    throttled = true;
+    requestAnimationFrame(()=>{
+      throttled = false;
+      renderCurrent();
+    });
   }
-  function getTouchMid(t0,t1){
-    return { x:(t0.clientX+t1.clientX)/2, y:(t0.clientY+t1.clientY)/2 };
+
+  /* ============ 操作 ============ */
+  function touchDist(t0,t1){
+    return Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
   }
   let hintTimer = null;
   function flashHint(){
     const hint = document.getElementById('stage-hint');
     hint.classList.add('show');
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(()=> hint.classList.remove('show'), 1800);
+    hintTimer = setTimeout(()=> hint.classList.remove('show'), 1600);
   }
 
   canvas.addEventListener('pointerdown', (e)=>{
@@ -1108,16 +1180,15 @@
     flashHint();
   });
   canvas.addEventListener('pointermove', (e)=>{
-    if(!state.drag) return;
-    const dx = e.clientX - state.drag.x;
-    const dy = e.clientY - state.drag.y;
+    if(!state.drag || state.pinch) return;
     const rect = canvas.getBoundingClientRect();
     const scale = Math.min(rect.width, rect.height) / (state.view.halfW * 2);
-    state.view.cx = state.drag.cx - dx/scale;
-    state.view.cy = state.drag.cy - dy/scale;
-    renderCurrentThrottled();
+    state.view.cx = state.drag.cx - (e.clientX - state.drag.x)/scale;
+    state.view.cy = state.drag.cy - (e.clientY - state.drag.y)/scale;
+    updateViewScale();
+    renderThrottled();
   });
-  function endDrag(e){
+  function endDrag(){
     if(!state.drag) return;
     state.drag = null;
     renderCurrent();
@@ -1125,102 +1196,97 @@
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
-  // ピンチズーム(タッチ2本)
   canvas.addEventListener('touchstart', (e)=>{
     if(e.touches.length === 2){
       state.drag = null;
-      state.pinch = {
-        dist: getTouchDist(e.touches[0], e.touches[1]),
-        halfW: state.view.halfW
-      };
+      state.pinch = { dist: touchDist(e.touches[0], e.touches[1]), halfW: state.view.halfW };
     }
   }, {passive:true});
   canvas.addEventListener('touchmove', (e)=>{
     if(e.touches.length === 2 && state.pinch){
-      const d = getTouchDist(e.touches[0], e.touches[1]);
-      const ratio = state.pinch.dist / Math.max(1,d);
-      state.view.halfW = Math.max(getMinHalfW(), Math.min(2, state.pinch.halfW * ratio));
+      const d = touchDist(e.touches[0], e.touches[1]);
+      state.view.halfW = clampHalfW(state.pinch.halfW * (state.pinch.dist / Math.max(1,d)));
+      updateViewScale();
       updateZoomBadge();
-      renderCurrentThrottled();
+      renderThrottled();
     }
   }, {passive:true});
   canvas.addEventListener('touchend', (e)=>{
     if(e.touches.length < 2 && state.pinch){
       state.pinch = null;
+      maybeRebaseCoordinates();
+      updateZoomBadge();
       renderCurrent();
     }
   }, {passive:true});
 
-  // マウスホイールでもズーム(PC確認用)
   canvas.addEventListener('wheel', (e)=>{
     e.preventDefault();
-    const factor = e.deltaY > 0 ? 1.15 : 0.87;
-    state.view.halfW = Math.max(getMinHalfW(), Math.min(2, state.view.halfW * factor));
+    state.view.halfW = clampHalfW(state.view.halfW * (e.deltaY > 0 ? 1.15 : 0.87));
+    updateViewScale();
+    maybeRebaseCoordinates();
     updateZoomBadge();
     renderCurrent();
   }, {passive:false});
 
-  // ダブルタップでズームイン(タップした場所を中心に)
+  /* ダブルタップで新しい注視点を選ぶ「瞬間」だけ使う吸着処理。
+     狙った点の近くに実体(線や色のついた部分)があるかを数段先まで確認し、
+     もし「穴」に近いなら、最も近い実体の方向へ少しだけ寄せる。
+     この吸着は新しい注視点を選ぶ操作の中でだけ発生し、
+     ズーム中(maybeRebaseCoordinatesの連続的な進行)では絶対に使わない。
+     これにより「操作の最中に急に動く」ジャンプ感を避けつつ、
+     偶然「何も無い場所」を選んでしまう頻度を大きく減らせる。 */
+  function snapToNearbySolid(cx, cy){
+    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
+    if(!def.infinite) return {cx, cy};
+
+    let bs = state.baseShape;
+    let x = cx, y = cy;
+    const CHECK_DEPTH = 20;
+
+    for(let d = 0; d < CHECK_DEPTH; d++){
+      const { chosen, isInside } = nearestChildInfo(bs, x, y);
+      if(!chosen) break; // 数値的に判定が困難になったら諦める(極端な場合の安全策)
+      if(isInside){
+        bs = chosen; // 実体側にいることを確認しつつ、より深くチェックを続ける
+        continue;
+      }
+      // 実体から外れている: 最も近い子図形の重心方向へ少し寄せる
+      const gx = (chosen[0].x+chosen[1].x+chosen[2].x)/3;
+      const gy = (chosen[0].y+chosen[1].y+chosen[2].y)/3;
+      x = x*0.4 + gx*0.6;
+      y = y*0.4 + gy*0.6;
+      bs = chosen;
+    }
+    return {cx: x, cy: y};
+  }
+
+  // ダブルタップでその場所を中心にズームイン
   let lastTap = 0;
   canvas.addEventListener('pointerup', (e)=>{
     const now = Date.now();
     if(now - lastTap < 300){
       const rect = canvas.getBoundingClientRect();
-      const sx = e.clientX-rect.left, sy = e.clientY-rect.top;
-      const w = screenToWorld(sx*(cw/rect.width), sy*(ch/rect.height));
-      state.view.cx = w.x;
-      state.view.cy = w.y;
-      state.view.halfW = Math.max(getMinHalfW(), state.view.halfW*0.5);
+      const sx = (e.clientX - rect.left) * (cw/rect.width);
+      const sy = (e.clientY - rect.top)  * (ch/rect.height);
+      const w = screenToWorld(sx, sy);
+      // 新しい注視点を選ぶこの瞬間だけ、実体の近くへそっと寄せる
+      const snapped = snapToNearbySolid(w.x, w.y);
+      state.view.cx = snapped.cx;
+      state.view.cy = snapped.cy;
+      state.view.halfW = clampHalfW(state.view.halfW * 0.5);
+      updateViewScale();
+      maybeRebaseCoordinates();
       updateZoomBadge();
       renderCurrent();
     }
     lastTap = now;
   });
 
-  // ドラッグ中の連続描画を間引く(マンデルブロは特に重いので)
-  let throttleScheduled = false;
-  function renderCurrentThrottled(){
-    if(state.type === 'mandelbrot') return; // マンデルブロはドラッグ終了時のみ再計算(重いため)
-    if(throttleScheduled) return;
-    throttleScheduled = true;
-    requestAnimationFrame(()=>{
-      throttleScheduled = false;
-      renderCurrent();
-    });
-  }
-
-  /* ============ メインループ(アニメーション進捗) ============ */
-  let lastTime = performance.now();
-  function loop(now){
-    const dt = Math.min(0.05, (now - lastTime)/1000);
-    lastTime = now;
-
-    if(state.type !== 'mandelbrot'){
-      let changed = false;
-      if(state.playing){
-        const speedFactor = [0.15, 0.28, 0.45, 0.7, 1.1][state.speed-1];
-        state.progress += dt * speedFactor;
-        if(state.progress >= 1){
-          state.progress = 1;
-          state.playing = false;
-        }
-        changed = true;
-      }
-      if(changed || state.drag || state.pinch){
-        renderCurrent();
-      }
-    }
-    requestAnimationFrame(loop);
-  }
-
   /* ============ 初期化 ============ */
-  function init(){
-    resizeCanvas();
-    resetView();
-    selectType('tree');
-    requestAnimationFrame(loop);
-  }
-  init();
+  resizeCanvas();
+  resetView();
+  selectType('sierpinski');
 
 })();
 </script>
