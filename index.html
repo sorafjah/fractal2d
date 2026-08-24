@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>フラクタルずかん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12181f;
+    --panel: #1a2330;
+    --panel-2: #202b3a;
+    --line: #2c3a4d;
+    --ink: #eef3f8;
+    --ink-dim: #9fb0c2;
+    --accent: #5fd0c0;
+    --accent-2: #f2a65a;
+    --accent-3: #8b7fe0;
+    --danger: #e0716f;
+    --radius: 14px;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'BIZ UDPGothic', sans-serif;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body{
+    display:flex;
+    flex-direction:column;
+    height:100dvh;
+    overflow:hidden;
+  }
+
+  /* ---------- ヘッダー ---------- */
+  header{
+    padding: 10px 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+    flex-shrink:0;
+  }
+  h1{
+    font-size: clamp(16px, 3vw, 20px);
+    margin:0;
+    font-weight:700;
+    letter-spacing:0.02em;
+    white-space:nowrap;
+  }
+  .badge{
+    font-size:12px;
+    color: var(--ink-dim);
+    background: var(--panel-2);
+    padding:4px 10px;
+    border-radius:999px;
+    border:1px solid var(--line);
+  }
+
+  /* ---------- 図鑑タブ ---------- */
+  .tabs{
+    display:flex;
+    gap:8px;
+    padding: 10px 14px;
+    overflow-x:auto;
+    flex-shrink:0;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tab-btn{
+    flex-shrink:0;
+    min-height:44px;
+    min-width:44px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink-dim);
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition: background .15s, color .15s, border-color .15s, transform .1s;
+  }
+  .tab-btn .dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .tab-btn.active{
+    background: var(--accent);
+    color: #0c1620;
+    border-color: var(--accent);
+  }
+  .tab-btn:active{ transform: scale(0.96); }
+
+  /* ---------- メインレイアウト ---------- */
+  main{
+    flex:1;
+    display:flex;
+    min-height:0;
+  }
+  .stage-wrap{
+    flex:1;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 12px;
+    min-width:0;
+  }
+  #stage{
+    width:100%;
+    height:100%;
+    max-width: 900px;
+    max-height: 900px;
+    aspect-ratio: 1/1;
+    background: #0a0e13;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    display:block;
+    touch-action: none;
+  }
+  .stage-hint{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform: translateX(-50%);
+    background: rgba(10,14,19,0.85);
+    color: var(--ink-dim);
+    font-size:12px;
+    padding:6px 14px;
+    border-radius:999px;
+    pointer-events:none;
+    opacity:0;
+    transition: opacity .3s;
+  }
+  .stage-hint.show{ opacity:1; }
+
+  .zoom-badge{
+    position:absolute;
+    top:14px;
+    left:14px;
+    background: rgba(10,14,19,0.85);
+    color: var(--ink-dim);
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    pointer-events:none;
+  }
+
+  .zoom-controls{
+    position:absolute;
+    bottom:14px;
+    right:14px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .zoom-controls button{
+    width:44px; height:44px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background: rgba(26,35,48,0.9);
+    color: var(--ink);
+    font-size:20px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .zoom-controls button:active{ background: var(--accent); color:#0c1620; }
+
+  .limit-badge{
+    position:absolute;
+    top:14px;
+    right:14px;
+    background: rgba(224,113,111,0.15);
+    color: #f2a09e;
+    border: 1px solid rgba(224,113,111,0.4);
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    pointer-events:none;
+    display:none;
+    max-width: 60%;
+    line-height:1.5;
+  }
+  .limit-badge.show{ display:block; }
+  .limit-badge ruby rt{ font-size:8px; }
+
+  /* ---------- サイドパネル(設定) ---------- */
+  #panel{
+    width: 300px;
+    flex-shrink:0;
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    overflow-y:auto;
+    padding: 16px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .panel-section{
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .panel-title{
+    font-size:13px;
+    font-weight:700;
+    color: var(--accent);
+    margin: 0 0 10px 0;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .row:last-child{ margin-bottom:0; }
+  .row-label{
+    font-size:14px;
+    color: var(--ink);
+    flex-shrink:0;
+  }
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .stepper button{
+    width:34px; height:34px;
+    min-width:34px; min-height:34px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    font-size:16px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .stepper button:active{ background: var(--accent); color:#0c1620; }
+  .stepper input{
+    width:44px;
+    text-align:center;
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color: var(--ink);
+    font-family:inherit;
+    font-size:14px;
+    height:34px;
+    padding:0;
+  }
+  .swatches{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .swatch{
+    width:36px; height:36px;
+    min-width:44px; min-height:44px;
+    border-radius:10px;
+    border:2px solid transparent;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .swatch.active{ border-color: var(--ink); }
+  .swatch-inner{
+    width:26px; height:26px;
+    border-radius:7px;
+  }
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .switch{
+    position:relative;
+    width:48px; height:28px;
+    min-width:48px;
+    border-radius:999px;
+    background: var(--line);
+    border:none;
+    cursor:pointer;
+  }
+  .switch::after{
+    content:"";
+    position:absolute;
+    top:3px; left:3px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background: var(--ink);
+    transition: transform .15s;
+  }
+  .switch.on{ background: var(--accent); }
+  .switch.on::after{ transform: translateX(20px); background:#0c1620; }
+
+  .btn-full{
+    width:100%;
+    min-height:44px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .btn-full:active{ background: var(--accent-2); color:#0c1620; }
+  .btn-primary{
+    background: var(--accent);
+    color:#0c1620;
+    border-color: var(--accent);
+  }
+  .btn-primary:active{ opacity:0.85; background: var(--accent); }
+
+  .desc-box{
+    font-size:13px;
+    line-height:1.7;
+    color: var(--ink-dim);
+  }
+  .desc-box ruby rt{ font-size:9px; color: var(--ink-dim); }
+
+  /* ---------- 設定を開く(モバイル用) ---------- */
+  #panel-toggle{
+    display:none;
+    position:fixed;
+    right:14px;
+    bottom:14px;
+    width:52px; height:52px;
+    border-radius:50%;
+    background: var(--accent);
+    color:#0c1620;
+    border:none;
+    font-size:22px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    z-index:20;
+    cursor:pointer;
+    align-items:center;
+    justify-content:center;
+  }
+  #panel-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,0.5);
+    z-index:15;
+  }
+
+  /* ---------- 初回モーダル ---------- */
+  #intro-modal{
+    position:fixed; inset:0;
+    background: rgba(6,9,13,0.9);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  #intro-modal.hidden{ display:none; }
+  .modal-box{
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 460px;
+    width:100%;
+    max-height: 85vh;
+    overflow-y:auto;
+  }
+  .modal-box h2{
+    margin:0 0 14px 0;
+    font-size:19px;
+  }
+  .modal-box p{
+    font-size:14px;
+    line-height:1.9;
+    color: var(--ink-dim);
+    margin: 0 0 10px 0;
+  }
+  .modal-box ruby rt{ font-size:9px; color: var(--ink-dim); }
+  .modal-check{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin: 16px 0;
+    font-size:13px;
+    color: var(--ink-dim);
+  }
+  .modal-check input{ width:20px; height:20px; }
+
+  /* ---------- レスポンシブ ---------- */
+  @media (max-width: 860px){
+    #panel{
+      position:fixed;
+      right:0; top:0; bottom:0;
+      transform: translateX(100%);
+      transition: transform .25s;
+      z-index:16;
+      width: min(320px, 85vw);
+    }
+    #panel.open{ transform: translateX(0); }
+    #panel-toggle{ display:flex; }
+    #panel-overlay.open{ display:block; }
+    .stage-wrap{ padding: 8px; }
+  }
+  @media (max-width: 860px) and (orientation: landscape){
+    header h1{ font-size:15px; }
+    .tabs{ padding: 6px 10px; }
+    .tab-btn{ padding: 6px 12px; font-size:13px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>フラクタルずかん</h1>
+  <span class="badge" id="stat-badge">じゅんび中</span>
+</header>
+
+<div class="tabs" id="tabs"></div>
+
+<main>
+  <div class="stage-wrap">
+    <canvas id="stage"></canvas>
+    <div class="zoom-badge" id="zoom-badge">×1.0</div>
+    <div class="limit-badge" id="limit-badge"></div>
+    <div class="stage-hint" id="stage-hint">ゆびでなぞると<ruby>移動<rt>いどう</rt></ruby>、2本ゆびでズームできるよ</div>
+    <div class="zoom-controls">
+      <button id="zoom-in" aria-label="ズームイン">＋</button>
+      <button id="zoom-out" aria-label="ズームアウト">－</button>
+      <button id="zoom-reset" aria-label="もどす" style="font-size:14px;">⟲</button>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div class="panel-section">
+      <p class="panel-title">🌱 <ruby>育<rt>そだ</rt></ruby>てる<ruby>速<rt>はや</rt></ruby>さ</p>
+      <div class="row">
+        <span class="row-label">スピード</span>
+        <div class="stepper">
+          <button id="speed-down" aria-label="おそくする">▽</button>
+          <input id="speed-val" type="text" inputmode="numeric" value="3" readonly>
+          <button id="speed-up" aria-label="はやくする">△</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="depth-section">
+      <p class="panel-title">🔁 <ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>しの<ruby>回数<rt>かいすう</rt></ruby></p>
+      <div class="row">
+        <span class="row-label">ふかさ</span>
+        <div class="stepper">
+          <button id="depth-down" aria-label="へらす">▽</button>
+          <input id="depth-val" type="text" inputmode="numeric" value="4" readonly>
+          <button id="depth-up" aria-label="ふやす">△</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <p class="panel-title">🎨 いろ</p>
+      <div class="swatches" id="color-swatches"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="toggle-row">
+        <span class="row-label">アニメーション</span>
+        <button class="switch on" id="anim-toggle"></button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <button class="btn-full btn-primary" id="replay-btn">🔄 もう<ruby>一度<rt>いちど</rt></ruby>さいしょから</button>
+    </div>
+
+    <div class="panel-section">
+      <button class="btn-full" id="save-btn">💾 <ruby>画像<rt>がぞう</rt></ruby>で<ruby>保存<rt>ほぞん</rt></ruby></button>
+    </div>
+
+    <div class="panel-section">
+      <p class="panel-title">📖 これは<ruby>何<rt>なに</rt></ruby>?</p>
+      <div class="desc-box" id="desc-box"></div>
+    </div>
+  </div>
+</main>
+
+<button id="panel-toggle" aria-label="設定を開く">⚙️</button>
+<div id="panel-overlay"></div>
+
+<div id="intro-modal">
+  <div class="modal-box">
+    <h2>🔍 フラクタルずかんへ ようこそ</h2>
+    <p>これは<ruby>同<rt>おな</rt></ruby>じ<ruby>形<rt>かたち</rt></ruby>が<ruby>何度<rt>なんど</rt></ruby>も<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>されてできる、<ruby>不思議<rt>ふしぎ</rt></ruby>な<ruby>図形<rt>ずけい</rt></ruby>「フラクタル」を<ruby>見<rt>み</rt></ruby>るアプリだよ。</p>
+    <p>上の タブ から<ruby>好<rt>す</rt></ruby>きな<ruby>図形<rt>ずけい</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでね。<ruby>右側<rt>みぎがわ</rt></ruby>(スマホは⚙️ボタン)で<ruby>速<rt>はや</rt></ruby>さや<ruby>色<rt>いろ</rt></ruby>を<ruby>変<rt>か</rt></ruby>えられるよ。</p>
+    <p>ゆびで<ruby>拡大<rt>かくだい</rt></ruby>すると、<ruby>同<rt>おな</rt></ruby>じ<ruby>形<rt>かたち</rt></ruby>がまた<ruby>出<rt>で</rt></ruby>てくるよ。どこまで<ruby>拡大<rt>かくだい</rt></ruby>できるか、ためしてみてね。</p>
+    <label class="modal-check">
+      <input type="checkbox" id="dont-show-again">
+      <span><ruby>次<rt>つぎ</rt></ruby>からこの<ruby>画面<rt>がめん</rt></ruby>を<ruby>出<rt>だ</rt></ruby>さない</span>
+    </label>
+    <button class="btn-full btn-primary" id="intro-close">はじめる</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ 状態管理 ============ */
+  const state = {
+    type: 'tree',
+    speed: 3,       // 1-5
+    depth: 4,       // 種類ごとにclamp
+    colorIdx: 0,
+    animOn: true,
+    progress: 0,    // 0-1 育成進捗
+    playing: true,
+    // 表示ビュー(全図形共通のズーム/パン): 論理座標系の中心と半幅
+    view: { cx: 0, cy: 0, halfW: 1 },
+    // ドラッグ用
+    drag: null,
+    pinch: null,
+  };
+
+  const COLOR_THEMES = [
+    { name: 'モリノミドリ', main: '#5fd0c0', sub: '#3a8f7f', bg:'#0a0e13' },
+    { name: 'ユウヤケ',   main: '#f2a65a', sub: '#c96b2e', bg:'#0a0e13' },
+    { name: 'ムラサキゾラ', main: '#8b7fe0', sub: '#5a4fb0', bg:'#0a0e13' },
+    { name: 'サクラ',     main: '#f28fb0', sub: '#c65f85', bg:'#0a0e13' },
+    { name: 'ユキ',       main: '#eef3f8', sub: '#9fb0c2', bg:'#0a0e13' },
+  ];
+
+  // infinite: true なら理論上どこまでもズームして同じ形が出続ける
+  const FRACTAL_TYPES = [
+    { id:'tree',   name:'木',           dot:'#5fd0c0', maxDepth:10, minDepth:1, defDepth:8, infinite:false },
+    { id:'koch',   name:'雪の結晶',      dot:'#8fd3ff', maxDepth:6,  minDepth:0, defDepth:3, infinite:true },
+    { id:'sierpinski', name:'三角形',    dot:'#f2a65a', maxDepth:9,  minDepth:0, defDepth:5, infinite:true },
+    { id:'circles', name:'花びら',       dot:'#f28fb0', maxDepth:6,  minDepth:1, defDepth:4, infinite:false },
+    { id:'mandelbrot', name:'マンデルブロ', dot:'#8b7fe0', maxDepth:1, minDepth:1, defDepth:1, infinite:true },
+  ];
+
+  const DESCRIPTIONS = {
+    tree: `<ruby>木</ruby><rt>き</rt>のえだが、<ruby>分</ruby><rt>わ</rt>かれてどんどん<ruby>増</ruby><rt>ふ</rt>えていく<ruby>形</ruby><rt>かたち</rt>だよ。<br><br>ズームすると、えだの<ruby>先</ruby><rt>さき</rt>にまた<ruby>同</ruby><rt>おな</rt>じような<ruby>分</ruby><rt>わ</rt>かれ<ruby>方</ruby><rt>かた</rt>がどんどん<ruby>出</ruby><rt>で</rt>てくるよ。`,
+    koch: `<ruby>三角形</ruby><rt>さんかくけい</rt>のまん<ruby>中</ruby><rt>なか</rt>に、また<ruby>三角形</ruby><rt>さんかくけい</rt>のでっぱりを<ruby>作</ruby><rt>つく</rt>ることを<ruby>繰</ruby><rt>く</rt>り<ruby>返</rt><rt>かえ</rt>すと、まるで<ruby>雪</ruby><rt>ゆき</rt>の<ruby>結晶</ruby><rt>けっしょう</rt>のような<ruby>形</ruby><rt>かたち</rt>になるよ。<br><br>これは<ruby>理論上</ruby><rt>りろんじょう</rt>どこまでもズームできて、いつでも<ruby>同</ruby><rt>おな</rt>じギザギザが<ruby>出</ruby><rt>で</rt>てくるよ。`,
+    sierpinski: `<ruby>大</ruby><rt>おお</rt>きな<ruby>三角形</ruby><rt>さんかくけい</rt>のまん<ruby>中</ruby><rt>なか</rt>を<ruby>穴</ruby><rt>あな</rt>あけて、のこった3つの<ruby>三角形</ruby><rt>さんかくけい</rt>でも<ruby>同</ruby><rt>おな</rt>じことを<ruby>繰</ruby><rt>く</rt>り<ruby>返</rt><rt>かえ</rt>す<ruby>図形</ruby><rt>ずけい</rt>だよ。<br><br>これも<ruby>理論上</ruby><rt>りろんじょう</rt>どこまでもズームできるよ。どんなに<ruby>拡大</ruby><rt>かくだい</rt>しても、また<ruby>三角形</ruby><rt>さんかくけい</rt>の<ruby>穴</ruby><rt>あな</rt>が<ruby>出</ruby><rt>で</rt>てくるよ。`,
+    circles: `1つの<ruby>丸</ruby><rt>まる</rt>のまわりに、<ruby>小</ruby><rt>ちい</rt>さい<ruby>丸</ruby><rt>まる</rt>をいくつも<ruby>並</ruby><rt>なら</rt>べることを<ruby>繰</ruby><rt>く</rt>り<ruby>返</rt><rt>かえ</rt>すと、お<ruby>花</ruby><rt>はな</rt>みたいな<ruby>模様</ruby><rt>もよう</rt>ができるよ。<br><br>ズームすると<ruby>小</ruby><rt>ちい</rt>さい<ruby>丸</ruby><rt>まる</rt>のまわりにまた<ruby>丸</ruby><rt>まる</rt>がどんどん<ruby>見</ruby><rt>み</rt>えてくるよ。`,
+    mandelbrot: `<ruby>数</ruby><rt>すう</rt><ruby>式</ruby><rt>しき</rt>を<ruby>使</ruby><rt>つか</rt>って<ruby>色</ruby><rt>いろ</rt>を<ruby>塗</ruby><rt>ぬ</rt>り<ruby>分</ruby><rt>わ</rt>けると<ruby>現</ruby><rt>あらわ</rt>れる、ふしぎな<ruby>図形</ruby><rt>ずけい</rt>だよ。<br><br>ゆびで<ruby>拡大</ruby><rt>かくだい</rt>すると、どこまでも<ruby>細</ruby><rt>こま</rt>かい<ruby>模様</ruby><rt>もよう</rt>が<ruby>出</ruby><rt>で</rt>てくるよ。これは<ruby>本当</ruby><rt>ほんとう</rt>に<ruby>無限</ruby><rt>むげん</rt>だよ。`,
+  };
+
+  /* ============ Canvas準備 ============ */
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  let cw = 0, ch = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    cw = Math.max(1, Math.round(rect.width));
+    ch = Math.max(1, Math.round(rect.height));
+    canvas.width = cw * dpr;
+    canvas.height = ch * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', ()=>{
+    resizeCanvas();
+    renderCurrent();
+  });
+
+  /* ============ 座標変換ヘルパー ============ */
+  // 論理座標(フラクタルを定義する -1..1くらいの正方形空間) → 画面ピクセル座標
+  function worldToScreen(x, y){
+    const scale = Math.min(cw,ch) / (state.view.halfW * 2);
+    const sx = cw/2 + (x - state.view.cx) * scale;
+    const sy = ch/2 + (y - state.view.cy) * scale;
+    return { x: sx, y: sy, scale };
+  }
+  function screenToWorld(sx, sy){
+    const scale = Math.min(cw,ch) / (state.view.halfW * 2);
+    const x = state.view.cx + (sx - cw/2) / scale;
+    const y = state.view.cy + (sy - ch/2) / scale;
+    return { x, y };
+  }
+
+  function resetView(){
+    state.view = { cx: 0, cy: 0, halfW: 1 };
+    updateZoomBadge();
+  }
+
+  function updateZoomBadge(){
+    const zoom = 1 / state.view.halfW;
+    document.getElementById('zoom-badge').textContent = '×' + (zoom < 10 ? zoom.toFixed(1) : Math.round(zoom).toLocaleString());
+    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
+    const limitBadge = document.getElementById('limit-badge');
+    // 木・花びらは画面ピクセルサイズ基準でかなり深くまで自動的に伸びるため、
+    // 安全上限(MAX_SAFE_DEPTH相当)に近づく非常に高いズームでのみ「そろそろ限界」を伝える
+    if(!def.infinite && zoom > 5000){
+      limitBadge.classList.add('show');
+      limitBadge.innerHTML = `<ruby>細<rt>こま</rt></ruby>かすぎて<ruby>描<rt>か</rt></ruby>くのが<ruby>大変<rt>たいへん</rt></ruby>になってきたよ`;
+    } else {
+      limitBadge.classList.remove('show');
+    }
+  }
+
+  /* ============ UI: タブ ============ */
+  const tabsEl = document.getElementById('tabs');
+  FRACTAL_TYPES.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (t.id === state.type ? ' active' : '');
+    btn.dataset.id = t.id;
+    btn.innerHTML = `<span class="dot" style="background:${t.dot}"></span>${t.name}`;
+    btn.addEventListener('click', ()=> selectType(t.id));
+    tabsEl.appendChild(btn);
+  });
+
+  function selectType(id){
+    state.type = id;
+    const def = FRACTAL_TYPES.find(t=>t.id===id);
+    state.depth = def.defDepth;
+    state.progress = 0;
+    state.playing = state.animOn;
+    resetView();
+    document.querySelectorAll('.tab-btn').forEach(b=>{
+      b.classList.toggle('active', b.dataset.id === id);
+    });
+    document.getElementById('depth-val').value = state.depth;
+    document.getElementById('depth-section').style.display = (id === 'mandelbrot') ? 'none' : '';
+    document.getElementById('desc-box').innerHTML = DESCRIPTIONS[id];
+    document.getElementById('stage-hint').textContent = 'ゆびでなぞると移動、2本ゆびでズームできるよ';
+    updateBadge();
+    renderCurrent();
+  }
+
+  /* ============ UI: スピード ============ */
+  const speedVal = document.getElementById('speed-val');
+  document.getElementById('speed-up').addEventListener('click', ()=>{
+    state.speed = Math.min(5, state.speed+1);
+    speedVal.value = state.speed;
+  });
+  document.getElementById('speed-down').addEventListener('click', ()=>{
+    state.speed = Math.max(1, state.speed-1);
+    speedVal.value = state.speed;
+  });
+
+  /* ============ UI: ふかさ ============ */
+  const depthVal = document.getElementById('depth-val');
+  document.getElementById('depth-up').addEventListener('click', ()=>{
+    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
+    state.depth = Math.min(def.maxDepth, state.depth+1);
+    depthVal.value = state.depth;
+    state.progress = 0;
+    state.playing = state.animOn;
+    updateZoomBadge();
+  });
+  document.getElementById('depth-down').addEventListener('click', ()=>{
+    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
+    state.depth = Math.max(def.minDepth, state.depth-1);
+    depthVal.value = state.depth;
+    state.progress = 0;
+    state.playing = state.animOn;
+    updateZoomBadge();
+  });
+
+  /* ============ UI: 色 ============ */
+  const swatchWrap = document.getElementById('color-swatches');
+  COLOR_THEMES.forEach((c, i)=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (i===0 ? ' active' : '');
+    sw.innerHTML = `<div class="swatch-inner" style="background:${c.main}"></div>`;
+    sw.addEventListener('click', ()=>{
+      state.colorIdx = i;
+      document.querySelectorAll('.swatch').forEach((s,idx)=> s.classList.toggle('active', idx===i));
+      if(state.type === 'mandelbrot') renderCurrent();
+    });
+    swatchWrap.appendChild(sw);
+  });
+
+  /* ============ UI: アニメON/OFF ============ */
+  const animToggle = document.getElementById('anim-toggle');
+  animToggle.addEventListener('click', ()=>{
+    state.animOn = !state.animOn;
+    animToggle.classList.toggle('on', state.animOn);
+    if(state.animOn && state.progress < 1) state.playing = true;
+  });
+
+  /* ============ UI: もう一度 ============ */
+  document.getElementById('replay-btn').addEventListener('click', ()=>{
+    state.progress = 0;
+    state.playing = state.animOn;
+    resetView();
+    renderCurrent();
+  });
+
+  /* ============ UI: 保存 ============ */
+  document.getElementById('save-btn').addEventListener('click', ()=>{
+    const link = document.createElement('a');
+    link.download = 'fractal-' + state.type + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  /* ============ UI: ズームボタン ============ */
+  function zoomBy(factor){
+    state.view.halfW = Math.max(getMinHalfW(), Math.min(2, state.view.halfW * factor));
+    updateZoomBadge();
+    renderCurrent();
+  }
+  function getMinHalfW(){
+    // マンデルブロは無限にズームできるが、精度限界を考慮して下限を設定
+    if(state.type === 'mandelbrot') return 0.000005;
+    // 木・花びらも画面ピクセル基準で深くまで自動的に伸びるので、他と同程度までズームを許可
+    return 0.00001;
+  }
+  document.getElementById('zoom-in').addEventListener('click', ()=> zoomBy(0.7));
+  document.getElementById('zoom-out').addEventListener('click', ()=> zoomBy(1/0.7));
+  document.getElementById('zoom-reset').addEventListener('click', ()=>{
+    resetView();
+    renderCurrent();
+  });
+
+  /* ============ UI: パネル開閉(モバイル) ============ */
+  const panel = document.getElementById('panel');
+  const panelOverlay = document.getElementById('panel-overlay');
+  document.getElementById('panel-toggle').addEventListener('click', ()=>{
+    panel.classList.add('open');
+    panelOverlay.classList.add('open');
+  });
+  panelOverlay.addEventListener('click', ()=>{
+    panel.classList.remove('open');
+    panelOverlay.classList.remove('open');
+  });
+
+  /* ============ 初回モーダル ============ */
+  const introModal = document.getElementById('intro-modal');
+  let skipIntro = false;
+  try{ skipIntro = localStorage.getItem('fractal-zukan-skip-intro') === '1'; }catch(e){}
+  if(skipIntro) introModal.classList.add('hidden');
+  document.getElementById('intro-close').addEventListener('click', ()=>{
+    introModal.classList.add('hidden');
+    if(document.getElementById('dont-show-again').checked){
+      try{ localStorage.setItem('fractal-zukan-skip-intro','1'); }catch(e){}
+    }
+  });
+
+  /* ============ バッジ ============ */
+  function updateBadge(){
+    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
+    document.getElementById('stat-badge').textContent = def.name + ' を見ているよ';
+  }
+
+  /* ============ 色の混合ヘルパー ============ */
+  function hexToRgb(hex){
+    const v = parseInt(hex.replace('#',''),16);
+    return { r:(v>>16)&255, g:(v>>8)&255, b:v&255 };
+  }
+  function mixColor(hexA, hexB, t){
+    const a = hexToRgb(hexA), b = hexToRgb(hexB);
+    const r = Math.round(a.r + (b.r-a.r)*t);
+    const g = Math.round(a.g + (b.g-a.g)*t);
+    const bl = Math.round(a.b + (b.b-a.b)*t);
+    return `rgb(${r},${g},${bl})`;
+  }
+
+  /* ============ 描画: 木 ============ */
+  // 論理空間: 幹の根本を(0, 1)、上方向がマイナスy、で正規化して描く
+  // ふかさ設定は「最初にどこまで一気に見せるか」の初期段階として使い、
+  // それより先はズームすればするほど画面ピクセルサイズ基準で自動的に伸びる(無限に近い自己相似の体感)
+  function drawTree(p){
+    const theme = COLOR_THEMES[state.colorIdx];
+    ctx.clearRect(0,0,cw,ch);
+    const totalDepth = state.depth;
+    const startX = 0, startY = 1;
+    const baseLen = 0.9;
+    const MAX_SAFE_DEPTH = 26; // 再帰の安全上限(計算量の暴走防止)
+    const MIN_PIXEL_LEN = 1.2; // これより短い枝は画面上で意味が無いので打ち切り
+
+    function branch(x, y, len, angle, depth){
+      if(len < 0.00001 || depth > MAX_SAFE_DEPTH) return;
+
+      // アニメーション進捗: 最初のtotalDepth段は順番に生える演出、それ以降は即時表示
+      let localP = 1;
+      if(depth < totalDepth){
+        const startFrac = depth / totalDepth;
+        const endFrac = (depth + 1) / totalDepth;
+        localP = (p - startFrac) / (endFrac - startFrac);
+        localP = Math.max(0, Math.min(1, localP));
+        if(localP <= 0) return;
+      } else if(p < 1){
+        // 初期段階の育成アニメーションが終わるまで、その先の枝は出さない
+        return;
+      }
+
+      const ex = x + Math.cos(angle) * len * localP;
+      const ey = y + Math.sin(angle) * len * localP;
+
+      const s1 = worldToScreen(x,y), s2 = worldToScreen(ex,ey);
+      const pixelLen = Math.hypot(s2.x-s1.x, s2.y-s1.y);
+      const onScreen = !(Math.max(s1.x,s2.x) < -20 || Math.min(s1.x,s2.x) > cw+20 ||
+                          Math.max(s1.y,s2.y) < -20 || Math.min(s1.y,s2.y) > ch+20);
+      if(onScreen){
+        const t = 1 - 1/(1 + depth*0.35);
+        ctx.strokeStyle = mixColor(theme.sub, theme.main, Math.min(1,t));
+        ctx.lineWidth = Math.max(0.8, len * s1.scale * 0.09);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(s1.x,s1.y);
+        ctx.lineTo(s2.x,s2.y);
+        ctx.stroke();
+      }
+
+      // 画面上で十分な長さが残っている(=ズームしてよく見えている)限り枝分かれを続ける
+      if(localP >= 0.999 && (pixelLen > MIN_PIXEL_LEN || depth < totalDepth)){
+        const newLen = len * 0.72;
+        branch(ex, ey, newLen, angle - 0.5, depth+1);
+        branch(ex, ey, newLen, angle + 0.5, depth+1);
+        if(depth % 3 === 0){
+          branch(ex, ey, newLen*0.85, angle, depth+1);
+        }
+      }
+    }
+    branch(startX, startY, baseLen, -Math.PI/2, 0);
+  }
+
+  /* ============ 描画: コッホ雪片(無限ズーム対応) ============ */
+  // 論理空間: 一辺2の正三角形を中心に配置
+  // 打ち切り条件は「画面上のセグメントの長さ」基準にする(ズーム量に天井を作らない)
+  const KOCH_MIN_PIXEL_LEN = 1.0;
+  const KOCH_MAX_SAFE_DEPTH = 30; // 再帰の安全上限(座標が壊れる/無意味になる前に止める)
+  function kochRecurse(p1, p2, animLocalP0, animLocalP1, depth, depthCap, drawFn){
+    const s1 = worldToScreen(p1.x, p1.y), s2 = worldToScreen(p2.x, p2.y);
+    const pixelLen = Math.hypot(s2.x-s1.x, s2.y-s1.y);
+    const offscreen = (Math.max(s1.x,s2.x) < -40 || Math.min(s1.x,s2.x) > cw+40 ||
+                        Math.max(s1.y,s2.y) < -40 || Math.min(s1.y,s2.y) > ch+40);
+
+    if(depth >= depthCap || depth >= KOCH_MAX_SAFE_DEPTH || (pixelLen < KOCH_MIN_PIXEL_LEN)){
+      drawFn(p1, p2, animLocalP1, s1, s2, depth);
+      return;
+    }
+    const dx = (p2.x - p1.x)/3, dy = (p2.y - p1.y)/3;
+    const pA = {x: p1.x+dx, y: p1.y+dy};
+    const pB = {x: p1.x+2*dx, y: p1.y+2*dy};
+    const angle = Math.atan2(dy,dx) - Math.PI/3;
+    const dist = Math.hypot(dx,dy);
+    const pPeak = { x: pA.x + Math.cos(angle)*dist, y: pA.y + Math.sin(angle)*dist };
+
+    const mid0 = animLocalP0, mid1 = animLocalP1;
+    const q = mid0 + (mid1-mid0)*0.25;
+    const r = mid0 + (mid1-mid0)*0.5;
+    const s = mid0 + (mid1-mid0)*0.75;
+
+    kochRecurse(p1, pA, mid0, q, depth+1, depthCap, drawFn);
+    kochRecurse(pA, pPeak, q, r, depth+1, depthCap, drawFn);
+    kochRecurse(pPeak, pB, r, s, depth+1, depthCap, drawFn);
+    kochRecurse(pB, p2, s, mid1, depth+1, depthCap, drawFn);
+  }
+  function drawKoch(p){
+    const theme = COLOR_THEMES[state.colorIdx];
+    ctx.clearRect(0,0,cw,ch);
+    const size = 1.3;
+    const h = size * Math.sqrt(3)/2;
+    const p1 = {x: 0, y: -h*2/3};
+    const p2 = {x: -size/2, y: h/3};
+    const p3 = {x: size/2, y: h/3};
+
+    // 初期の育成アニメーションは「ふかさ」設定の段数ぶんだけ順番に見せる。
+    // アニメが終わったあとは、ズーム量に応じて自動でそれより先まで細分化される(無限ズーム表現)
+    const introDepth = state.depth;
+    const animDone = (p >= 1);
+
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    const edges = [[p1,p2],[p2,p3],[p3,p1]];
+    edges.forEach((edge, i)=>{
+      const color = i===0? theme.main : (i===1? mixColor(theme.main, theme.sub, 0.5) : theme.sub);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      let started = false;
+      const depthCap = animDone ? KOCH_MAX_SAFE_DEPTH : Math.ceil(introDepth) + 1;
+      kochRecurse(edge[0], edge[1], 0, 1, 0, depthCap, (a,b,localEndP,sa,sb,depth)=>{
+        if(!animDone){
+          // イントロ中は段数ベースの進捗で打ち切り、細分化しすぎない
+          const stepP = Math.min(1, p * introDepth);
+          if(localEndP > stepP + 0.02) return;
+        }
+        if(!started){ ctx.moveTo(sa.x,sa.y); started = true; }
+        ctx.lineTo(sb.x, sb.y);
+      });
+      ctx.stroke();
+    });
+  }
+
+  /* ============ 描画: シェルピンスキー(無限ズーム対応) ============ */
+  // ふかさ設定は初期の育成演出の段数。演出が終わったあとは、
+  // 画面上の三角形の大きさ(ピクセル)を基準に、ズームするほど自動で先まで細分化する
+  const SIER_MIN_PIXEL = 1.2;
+  const SIER_MAX_SAFE_DEPTH = 34;
+  function drawSierpinski(p){
+    const theme = COLOR_THEMES[state.colorIdx];
+    ctx.clearRect(0,0,cw,ch);
+    const size = 1.8;
+    const h = size * Math.sqrt(3)/2;
+    const top = {x:0, y: -h*2/3};
+    const left = {x:-size/2, y: h/3};
+    const right = {x:size/2, y: h/3};
+
+    const introDepth = state.depth;
+    const animDone = (p >= 1);
+
+    function tri(a,b,c,depth){
+      const sa = worldToScreen(a.x,a.y), sb = worldToScreen(b.x,b.y), sc = worldToScreen(c.x,c.y);
+      const minX = Math.min(sa.x,sb.x,sc.x), maxX = Math.max(sa.x,sb.x,sc.x);
+      const minY = Math.min(sa.y,sb.y,sc.y), maxY = Math.max(sa.y,sb.y,sc.y);
+      const offscreen = (maxX < -20 || minX > cw+20 || maxY < -20 || minY > ch+20);
+      const pixelSize = Math.max(maxX-minX, maxY-minY);
+
+      // イントロ中は段数ベースの進捗、完了後はピクセルサイズ基準でどこまで潜るか決める
+      let localP = 1;
+      if(!animDone){
+        const stepDepth = Math.min(introDepth, depth+1);
+        const startFrac = depth/(introDepth+0.0001);
+        const endFrac = (depth+1)/(introDepth+0.0001);
+        localP = (p - startFrac)/(endFrac-startFrac);
+        localP = Math.max(0, Math.min(1, localP));
+        if(localP <= 0) return;
+      }
+
+      const isLeaf = (!animDone && depth >= introDepth) ||
+                     (animDone && (pixelSize < SIER_MIN_PIXEL || depth >= SIER_MAX_SAFE_DEPTH));
+
+      if((isLeaf || localP < 1) && !offscreen){
+        const t = 1 - 1/(1+depth*0.25);
+        ctx.fillStyle = mixColor(theme.sub, theme.main, Math.min(1,t));
+        ctx.globalAlpha = localP;
+        ctx.beginPath();
+        ctx.moveTo(sa.x,sa.y); ctx.lineTo(sb.x,sb.y); ctx.lineTo(sc.x,sc.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      if(isLeaf || localP < 1) return;
+
+      const ab = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+      const bc = {x:(b.x+c.x)/2, y:(b.y+c.y)/2};
+      const ca = {x:(c.x+a.x)/2, y:(c.y+a.y)/2};
+      tri(a, ab, ca, depth+1);
+      tri(ab, b, bc, depth+1);
+      tri(ca, bc, c, depth+1);
+    }
+    tri(top, left, right, 0);
+  }
+
+  /* ============ 描画: 花びら(円の再帰) ============ */
+  // ふかさ設定は初期の育成演出の段数。それ以降はズームするほど画面ピクセル半径基準で自動的に増え続ける
+  function drawCircles(p){
+    const theme = COLOR_THEMES[state.colorIdx];
+    ctx.clearRect(0,0,cw,ch);
+    const totalDepth = state.depth;
+    const baseR = 0.62;
+    const MAX_SAFE_DEPTH = 22;
+    const MIN_PIXEL_R = 1.5;
+
+    function circ(x,y,r,depth,hueT){
+      if(r < 0.000001 || depth > MAX_SAFE_DEPTH) return;
+
+      let localP = 1;
+      if(depth < totalDepth){
+        const startFrac = depth/totalDepth;
+        const endFrac = (depth+1)/totalDepth;
+        localP = (p - startFrac)/(endFrac-startFrac);
+        localP = Math.max(0, Math.min(1, localP));
+        if(localP<=0) return;
+      } else if(p < 1){
+        return;
+      }
+
+      const s = worldToScreen(x,y);
+      const rPix = r * s.scale;
+      const onscreen = !(s.x+rPix < -20 || s.x-rPix > cw+20 || s.y+rPix < -20 || s.y-rPix > ch+20);
+      if(onscreen){
+        ctx.strokeStyle = mixColor(theme.sub, theme.main, hueT % 1);
+        ctx.lineWidth = Math.max(0.8, rPix*0.05);
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,rPix, -Math.PI/2, -Math.PI/2 + Math.PI*2*localP);
+        ctx.stroke();
+      }
+
+      if(localP >= 0.999 && (rPix > MIN_PIXEL_R || depth < totalDepth)){
+        const n = 6;
+        const newR = r*0.42;
+        for(let i=0;i<n;i++){
+          const a = (Math.PI*2/n)*i;
+          circ(x + Math.cos(a)*r*0.85, y + Math.sin(a)*r*0.85, newR, depth+1, hueT+0.15);
+        }
+      }
+    }
+    circ(0,0,baseR, 0, 0);
+  }
+
+  /* ============ 描画: マンデルブロ ============ */
+  let mbWorking = false;
+  let mbNeedsRedraw = false;
+  function drawMandelbrot(){
+    if(mbWorking){ mbNeedsRedraw = true; return; }
+    mbWorking = true;
+    setTimeout(()=>{
+      const w = Math.round(cw), h = Math.round(ch);
+      const imgData = ctx.createImageData(w, h);
+      const data = imgData.data;
+      const theme = COLOR_THEMES[state.colorIdx];
+      const mainRgb = hexToRgb(theme.main);
+      const subRgb = hexToRgb(theme.sub);
+      // state.view(論理座標: 中心±halfW)をマンデルブロ座標系にマッピング
+      // 基準: view.halfW=1 のとき、複素平面のスケール3.2、中心(-0.5,0)
+      const mbCx = -0.5 + state.view.cx * 1.6;
+      const mbCy = state.view.cy * 1.6;
+      const mbScale = state.view.halfW * 3.2;
+      const maxIter = Math.min(400, 80 + Math.floor(Math.log2(1/state.view.halfW+1) * 40));
+
+      for(let py=0; py<h; py++){
+        const y0 = mbCy + (py/h - 0.5) * mbScale;
+        for(let px=0; px<w; px++){
+          const x0 = mbCx + (px/w - 0.5) * mbScale * (w/h);
+          let x=0, y=0, iter=0;
+          while(x*x+y*y <= 4 && iter < maxIter){
+            const xt = x*x - y*y + x0;
+            y = 2*x*y + y0;
+            x = xt;
+            iter++;
+          }
+          const idx = (py*w+px)*4;
+          if(iter === maxIter){
+            data[idx]=10; data[idx+1]=14; data[idx+2]=19; data[idx+3]=255;
+          } else {
+            const t = iter / maxIter;
+            const tt = Math.sqrt(t);
+            data[idx]   = Math.round(subRgb.r + (mainRgb.r-subRgb.r)*tt);
+            data[idx+1] = Math.round(subRgb.g + (mainRgb.g-subRgb.g)*tt);
+            data[idx+2] = Math.round(subRgb.b + (mainRgb.b-subRgb.b)*tt);
+            data[idx+3] = 255;
+          }
+        }
+      }
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.putImageData(imgData, 0, 0);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      mbWorking = false;
+      updateBadge();
+      if(mbNeedsRedraw){ mbNeedsRedraw = false; drawMandelbrot(); }
+    }, 10);
+  }
+
+  /* ============ 共通描画ディスパッチ ============ */
+  function renderCurrent(){
+    switch(state.type){
+      case 'tree': drawTree(state.progress); break;
+      case 'koch': drawKoch(state.progress); break;
+      case 'sierpinski': drawSierpinski(state.progress); break;
+      case 'circles': drawCircles(state.progress); break;
+      case 'mandelbrot': drawMandelbrot(); break;
+    }
+  }
+
+  /* ============ ドラッグ・ピンチ操作(全図形共通) ============ */
+  function getTouchDist(t0,t1){
+    return Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
+  }
+  function getTouchMid(t0,t1){
+    return { x:(t0.clientX+t1.clientX)/2, y:(t0.clientY+t1.clientY)/2 };
+  }
+  let hintTimer = null;
+  function flashHint(){
+    const hint = document.getElementById('stage-hint');
+    hint.classList.add('show');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(()=> hint.classList.remove('show'), 1800);
+  }
+
+  canvas.addEventListener('pointerdown', (e)=>{
+    canvas.setPointerCapture(e.pointerId);
+    state.drag = { x: e.clientX, y: e.clientY, cx: state.view.cx, cy: state.view.cy };
+    flashHint();
+  });
+  canvas.addEventListener('pointermove', (e)=>{
+    if(!state.drag) return;
+    const dx = e.clientX - state.drag.x;
+    const dy = e.clientY - state.drag.y;
+    const rect = canvas.getBoundingClientRect();
+    const scale = Math.min(rect.width, rect.height) / (state.view.halfW * 2);
+    state.view.cx = state.drag.cx - dx/scale;
+    state.view.cy = state.drag.cy - dy/scale;
+    renderCurrentThrottled();
+  });
+  function endDrag(e){
+    if(!state.drag) return;
+    state.drag = null;
+    renderCurrent();
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  // ピンチズーム(タッチ2本)
+  canvas.addEventListener('touchstart', (e)=>{
+    if(e.touches.length === 2){
+      state.drag = null;
+      state.pinch = {
+        dist: getTouchDist(e.touches[0], e.touches[1]),
+        halfW: state.view.halfW
+      };
+    }
+  }, {passive:true});
+  canvas.addEventListener('touchmove', (e)=>{
+    if(e.touches.length === 2 && state.pinch){
+      const d = getTouchDist(e.touches[0], e.touches[1]);
+      const ratio = state.pinch.dist / Math.max(1,d);
+      state.view.halfW = Math.max(getMinHalfW(), Math.min(2, state.pinch.halfW * ratio));
+      updateZoomBadge();
+      renderCurrentThrottled();
+    }
+  }, {passive:true});
+  canvas.addEventListener('touchend', (e)=>{
+    if(e.touches.length < 2 && state.pinch){
+      state.pinch = null;
+      renderCurrent();
+    }
+  }, {passive:true});
+
+  // マウスホイールでもズーム(PC確認用)
+  canvas.addEventListener('wheel', (e)=>{
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 1.15 : 0.87;
+    state.view.halfW = Math.max(getMinHalfW(), Math.min(2, state.view.halfW * factor));
+    updateZoomBadge();
+    renderCurrent();
+  }, {passive:false});
+
+  // ダブルタップでズームイン(タップした場所を中心に)
+  let lastTap = 0;
+  canvas.addEventListener('pointerup', (e)=>{
+    const now = Date.now();
+    if(now - lastTap < 300){
+      const rect = canvas.getBoundingClientRect();
+      const sx = e.clientX-rect.left, sy = e.clientY-rect.top;
+      const w = screenToWorld(sx*(cw/rect.width), sy*(ch/rect.height));
+      state.view.cx = w.x;
+      state.view.cy = w.y;
+      state.view.halfW = Math.max(getMinHalfW(), state.view.halfW*0.5);
+      updateZoomBadge();
+      renderCurrent();
+    }
+    lastTap = now;
+  });
+
+  // ドラッグ中の連続描画を間引く(マンデルブロは特に重いので)
+  let throttleScheduled = false;
+  function renderCurrentThrottled(){
+    if(state.type === 'mandelbrot') return; // マンデルブロはドラッグ終了時のみ再計算(重いため)
+    if(throttleScheduled) return;
+    throttleScheduled = true;
+    requestAnimationFrame(()=>{
+      throttleScheduled = false;
+      renderCurrent();
+    });
+  }
+
+  /* ============ メインループ(アニメーション進捗) ============ */
+  let lastTime = performance.now();
+  function loop(now){
+    const dt = Math.min(0.05, (now - lastTime)/1000);
+    lastTime = now;
+
+    if(state.type !== 'mandelbrot'){
+      let changed = false;
+      if(state.playing){
+        const speedFactor = [0.15, 0.28, 0.45, 0.7, 1.1][state.speed-1];
+        state.progress += dt * speedFactor;
+        if(state.progress >= 1){
+          state.progress = 1;
+          state.playing = false;
+        }
+        changed = true;
+      }
+      if(changed || state.drag || state.pinch){
+        renderCurrent();
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  /* ============ 初期化 ============ */
+  function init(){
+    resizeCanvas();
+    resetView();
+    selectType('tree');
+    requestAnimationFrame(loop);
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>
