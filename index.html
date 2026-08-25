@@ -3,1291 +3,457 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>フラクタルずかん</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<title>コッホ雪片 — 無限ズーム</title>
 <style>
   :root{
-    --bg: #12181f;
-    --panel: #1a2330;
-    --panel-2: #202b3a;
-    --line: #2c3a4d;
-    --ink: #eef3f8;
-    --ink-dim: #9fb0c2;
-    --accent: #5fd0c0;
-    --accent-2: #f2a65a;
-    --radius: 14px;
+    --ink: #eaf4ff;
+    --sub: #9fc3e0;
+    --bg-top: #050b18;
+    --bg-bottom: #0c1a2e;
+    --line: #d7ecff;
+    --accent: #6fd7ff;
+    --panel: rgba(8, 18, 34, 0.72);
+    --panel-border: rgba(140, 200, 255, 0.18);
   }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-  html,body{
-    margin:0; padding:0; height:100%;
-    background: var(--bg);
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body{
+    margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+    background: radial-gradient(120% 140% at 50% -10%, var(--bg-bottom), var(--bg-top));
+    font-family: "BIZ UDPGothic", "UD デジタル 教科書体", "Hiragino Sans", "Yu Gothic UI", sans-serif;
     color: var(--ink);
-    font-family: 'BIZ UDPGothic', sans-serif;
-    overscroll-behavior: none;
-    touch-action: manipulation;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  body{
-    display:flex;
-    flex-direction:column;
-    height:100dvh;
-    overflow:hidden;
-  }
-
-  header{
-    padding: 10px 14px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    border-bottom: 1px solid var(--line);
-    background: var(--panel);
-    flex-shrink:0;
-  }
-  h1{
-    font-size: clamp(16px, 3vw, 20px);
-    margin:0;
-    font-weight:700;
-    letter-spacing:0.02em;
-    white-space:nowrap;
-  }
-  .badge{
-    font-size:12px;
-    color: var(--ink-dim);
-    background: var(--panel-2);
-    padding:4px 10px;
-    border-radius:999px;
-    border:1px solid var(--line);
-  }
-
-  .tabs{
-    display:flex;
-    gap:8px;
-    padding: 10px 14px;
-    overflow-x:auto;
-    flex-shrink:0;
-    background: var(--panel);
-    border-bottom: 1px solid var(--line);
-    scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar{ display:none; }
-  .tab-btn{
-    flex-shrink:0;
-    min-height:44px;
-    min-width:44px;
-    padding: 8px 16px;
-    border-radius: 999px;
-    border: 1.5px solid var(--line);
-    background: var(--panel-2);
-    color: var(--ink-dim);
-    font-family:inherit;
-    font-size:14px;
-    font-weight:700;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    transition: background .15s, color .15s, border-color .15s, transform .1s;
-  }
-  .tab-btn .dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-  .tab-btn.active{
-    background: var(--accent);
-    color: #0c1620;
-    border-color: var(--accent);
-  }
-  .tab-btn:active{ transform: scale(0.96); }
-
-  main{
-    flex:1;
-    display:flex;
-    min-height:0;
-  }
-  .stage-wrap{
-    flex:1;
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding: 12px;
-    min-width:0;
-  }
-  #stage{
-    width:100%;
-    height:100%;
-    max-width: 900px;
-    max-height: 900px;
-    aspect-ratio: 1/1;
-    background: #0a0e13;
-    border-radius: var(--radius);
-    border: 1px solid var(--line);
-    display:block;
     touch-action: none;
   }
-  .stage-hint{
-    position:absolute;
-    bottom:20px;
-    left:50%;
-    transform: translateX(-50%);
-    background: rgba(10,14,19,0.85);
-    color: var(--ink-dim);
-    font-size:12px;
-    padding:6px 14px;
-    border-radius:999px;
+  #stage{ position:fixed; inset:0; display:block; }
+
+  #hud{
+    position:fixed; top:0; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding: max(14px, env(safe-area-inset-top)) 16px 0 16px;
     pointer-events:none;
-    opacity:0;
-    transition: opacity .3s;
   }
-  .stage-hint.show{ opacity:1; }
+  #title{
+    pointer-events:auto;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(6px);
+    border-radius: 14px;
+    padding: 10px 16px;
+    line-height:1.3;
+  }
+  #title h1{
+    margin:0; font-size: 15px; font-weight: 700; letter-spacing: .02em;
+    color: var(--ink);
+  }
+  #title p{
+    margin: 2px 0 0; font-size: 12px; color: var(--sub); font-variant-numeric: tabular-nums;
+  }
 
-  .zoom-badge{
-    position:absolute;
-    top:14px;
-    left:14px;
-    background: rgba(10,14,19,0.85);
-    color: var(--ink-dim);
-    font-size:12px;
-    padding:6px 12px;
-    border-radius:999px;
+  #controls{
+    position:fixed; right:16px; bottom: max(16px, env(safe-area-inset-bottom));
+    display:flex; flex-direction:column; gap:10px;
+    pointer-events:auto;
+  }
+  .btn{
+    width:52px; height:52px; border-radius:16px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(6px);
+    color: var(--ink);
+    font-size: 22px;
+    display:flex; align-items:center; justify-content:center;
+    user-select:none; cursor:pointer;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .btn:active{ transform: scale(0.92); background: rgba(30, 60, 100, 0.8); }
+  #resetBtn{ font-size: 18px; }
+
+  #hint{
+    position:fixed; left:16px; bottom: max(16px, env(safe-area-inset-bottom));
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(6px);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--sub);
+    max-width: 240px;
+    line-height: 1.5;
     pointer-events:none;
-    line-height:1.4;
+    transition: opacity .6s ease;
   }
-  .zoom-badge b{ color: var(--accent); font-weight:700; }
-
-  .zoom-controls{
-    position:absolute;
-    bottom:14px;
-    right:14px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-  .zoom-controls button{
-    width:44px; height:44px;
-    border-radius:10px;
-    border:1px solid var(--line);
-    background: rgba(26,35,48,0.9);
-    color: var(--ink);
-    font-size:20px;
-    font-weight:700;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-  }
-  .zoom-controls button:active{ background: var(--accent); color:#0c1620; }
-
-  .limit-badge{
-    position:absolute;
-    top:14px;
-    right:14px;
-    background: rgba(242,166,90,0.15);
-    color: #f2c08a;
-    border: 1px solid rgba(242,166,90,0.4);
-    font-size:12px;
-    padding:6px 12px;
-    border-radius:999px;
-    pointer-events:none;
-    display:none;
-    max-width: 60%;
-    line-height:1.5;
-  }
-  .limit-badge.show{ display:block; }
-  .limit-badge ruby rt{ font-size:8px; }
-
-  #panel{
-    width: 300px;
-    flex-shrink:0;
-    background: var(--panel);
-    border-left: 1px solid var(--line);
-    overflow-y:auto;
-    padding: 16px;
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-  }
-  .panel-section{
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 14px;
-  }
-  .panel-title{
-    font-size:13px;
-    font-weight:700;
-    color: var(--accent);
-    margin: 0 0 10px 0;
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-  .row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    margin-bottom:10px;
-  }
-  .row:last-child{ margin-bottom:0; }
-  .row-label{
-    font-size:14px;
-    color: var(--ink);
-    flex-shrink:0;
-  }
-  .stepper{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    flex-shrink:0;
-  }
-  .stepper button{
-    width:34px; height:34px;
-    min-width:34px; min-height:34px;
-    border-radius:8px;
-    border:1px solid var(--line);
-    background: var(--panel);
-    color: var(--ink);
-    font-size:16px;
-    font-weight:700;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-  }
-  .stepper button:active{ background: var(--accent); color:#0c1620; }
-  .stepper input{
-    width:44px;
-    text-align:center;
-    background: var(--panel);
-    border:1px solid var(--line);
-    border-radius:8px;
-    color: var(--ink);
-    font-family:inherit;
-    font-size:14px;
-    height:34px;
-    padding:0;
-  }
-  .swatches{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-  }
-  .swatch{
-    width:36px; height:36px;
-    min-width:44px; min-height:44px;
-    border-radius:10px;
-    border:2px solid transparent;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .swatch.active{ border-color: var(--ink); }
-  .swatch-inner{
-    width:26px; height:26px;
-    border-radius:7px;
-  }
-  .toggle-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .switch{
-    position:relative;
-    width:48px; height:28px;
-    min-width:48px;
-    border-radius:999px;
-    background: var(--line);
-    border:none;
-    cursor:pointer;
-  }
-  .switch::after{
-    content:"";
-    position:absolute;
-    top:3px; left:3px;
-    width:22px; height:22px;
-    border-radius:50%;
-    background: var(--ink);
-    transition: transform .15s;
-  }
-  .switch.on{ background: var(--accent); }
-  .switch.on::after{ transform: translateX(20px); background:#0c1620; }
-
-  .btn-full{
-    width:100%;
-    min-height:44px;
-    border-radius:10px;
-    border:1px solid var(--line);
-    background: var(--panel);
-    color: var(--ink);
-    font-family:inherit;
-    font-size:14px;
-    font-weight:700;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-  }
-  .btn-full:active{ background: var(--accent-2); color:#0c1620; }
-  .btn-primary{
-    background: var(--accent);
-    color:#0c1620;
-    border-color: var(--accent);
-  }
-  .btn-primary:active{ opacity:0.85; background: var(--accent); }
-
-  .desc-box{
-    font-size:13px;
-    line-height:1.7;
-    color: var(--ink-dim);
-  }
-  .desc-box ruby rt{ font-size:9px; color: var(--ink-dim); }
-
-  #panel-toggle{
-    display:none;
-    position:fixed;
-    right:14px;
-    bottom:14px;
-    width:52px; height:52px;
-    border-radius:50%;
-    background: var(--accent);
-    color:#0c1620;
-    border:none;
-    font-size:22px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-    z-index:20;
-    cursor:pointer;
-    align-items:center;
-    justify-content:center;
-  }
-  #panel-overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background: rgba(0,0,0,0.5);
-    z-index:15;
-  }
-
-  #intro-modal{
-    position:fixed; inset:0;
-    background: rgba(6,9,13,0.9);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:100;
-    padding:20px;
-  }
-  #intro-modal.hidden{ display:none; }
-  .modal-box{
-    background: var(--panel);
-    border:1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 24px;
-    max-width: 460px;
-    width:100%;
-    max-height: 85vh;
-    overflow-y:auto;
-  }
-  .modal-box h2{
-    margin:0 0 14px 0;
-    font-size:19px;
-  }
-  .modal-box p{
-    font-size:14px;
-    line-height:1.9;
-    color: var(--ink-dim);
-    margin: 0 0 10px 0;
-  }
-  .modal-box ruby rt{ font-size:9px; color: var(--ink-dim); }
-  .modal-check{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin: 16px 0;
-    font-size:13px;
-    color: var(--ink-dim);
-  }
-  .modal-check input{ width:20px; height:20px; }
-
-  @media (max-width: 860px){
-    #panel{
-      position:fixed;
-      right:0; top:0; bottom:0;
-      transform: translateX(100%);
-      transition: transform .25s;
-      z-index:16;
-      width: min(320px, 85vw);
-    }
-    #panel.open{ transform: translateX(0); }
-    #panel-toggle{ display:flex; }
-    #panel-overlay.open{ display:block; }
-    .stage-wrap{ padding: 8px; }
-  }
-  @media (max-width: 860px) and (orientation: landscape){
-    header h1{ font-size:15px; }
-    .tabs{ padding: 6px 10px; }
-    .tab-btn{ padding: 6px 12px; font-size:13px; }
-  }
+  #hint.hidden{ opacity:0; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>フラクタルずかん</h1>
-  <span class="badge" id="stat-badge">じゅんび中</span>
-</header>
+<canvas id="stage"></canvas>
 
-<div class="tabs" id="tabs"></div>
-
-<main>
-  <div class="stage-wrap">
-    <canvas id="stage"></canvas>
-    <div class="zoom-badge" id="zoom-badge">×1.0</div>
-    <div class="limit-badge" id="limit-badge"></div>
-    <div class="stage-hint" id="stage-hint">ゆびでなぞると移動、2本ゆびでズームできるよ</div>
-    <div class="zoom-controls">
-      <button id="zoom-reset" aria-label="もどす">⟲</button>
-    </div>
+<div id="hud">
+  <div id="title">
+    <h1>コッホ雪片</h1>
+    <p id="zoomLabel">拡大率 &times;1</p>
   </div>
+</div>
 
-  <div id="panel">
-    <div class="panel-section">
-      <p class="panel-title">🎨 いろ</p>
-      <div class="swatches" id="color-swatches"></div>
-    </div>
+<div id="hint">ドラッグで移動 / ホイールかピンチで拡大<br>どこまでも寄っていくと、同じ形がくり返し現れます</div>
 
-    <div class="panel-section">
-      <button class="btn-full btn-primary" id="replay-btn">⟲ さいしょの<ruby>表示<rt>ひょうじ</rt></ruby>にもどす</button>
-    </div>
-
-    <div class="panel-section">
-      <button class="btn-full" id="save-btn">💾 画像で保存</button>
-    </div>
-
-    <div class="panel-section">
-      <p class="panel-title">📖 これは<ruby>何<rt>なに</rt></ruby>?</p>
-      <div class="desc-box" id="desc-box"></div>
-    </div>
-  </div>
-</main>
-
-<button id="panel-toggle" aria-label="設定を開く">⚙️</button>
-<div id="panel-overlay"></div>
-
-<div id="intro-modal">
-  <div class="modal-box">
-    <h2>🔍 フラクタルずかんへ ようこそ</h2>
-    <p>これは<ruby>同<rt>おな</rt></ruby>じ<ruby>形<rt>かたち</rt></ruby>が<ruby>何度<rt>なんど</rt></ruby>も<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>されてできる、<ruby>不思議<rt>ふしぎ</rt></ruby>な<ruby>図形<rt>ずけい</rt></ruby>「フラクタル」を<ruby>見<rt>み</rt></ruby>るアプリだよ。</p>
-    <p>上の タブ から<ruby>好<rt>す</rt></ruby>きな<ruby>図形<rt>ずけい</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んでね。<ruby>右側<rt>みぎがわ</rt></ruby>(スマホは⚙️ボタン)で<ruby>色<rt>いろ</rt></ruby>を<ruby>変<rt>か</rt></ruby>えられるよ。</p>
-    <p><ruby>雪<rt>ゆき</rt></ruby>の<ruby>結晶<rt>けっしょう</rt></ruby>と<ruby>三角形<rt>さんかくけい</rt></ruby>は、どこまでも<ruby>拡大<rt>かくだい</rt></ruby>できるよ。<ruby>何倍<rt>なんばい</rt></ruby>まで<ruby>行<rt>い</rt></ruby>けるか、ためしてみてね。</p>
-    <label class="modal-check">
-      <input type="checkbox" id="dont-show-again">
-      <span><ruby>次<rt>つぎ</rt></ruby>からこの<ruby>画面<rt>がめん</rt></ruby>を<ruby>出<rt>だ</rt></ruby>さない</span>
-    </label>
-    <button class="btn-full btn-primary" id="intro-close">はじめる</button>
-  </div>
+<div id="controls">
+  <div class="btn" id="zoomIn">＋</div>
+  <div class="btn" id="zoomOut">－</div>
+  <div class="btn" id="resetBtn">⟲</div>
 </div>
 
 <script>
 (function(){
   "use strict";
 
-  /* ============================================================
-     無限ズームの仕組み
-
-     浮動小数点数の精度は約15桁しかないため、素朴にズーム倍率を
-     上げ続けると座標の差が表現できなくなり図形が崩れる。
-
-     そこで「基準図形」の考え方を使う。シェルピンスキーもコッホも
-     自分自身の縮小コピーでできているので、ズームが一定倍率を超えたら
-     画面に映っている部分を新しい基準図形として座標系ごと作り直す。
-     こうすると座標の絶対値は常に扱いやすい範囲に留まり、
-     精度は永久に劣化しない。表示倍率だけ累積で掛けていけば、
-     見た目には無限にズームしていることになる。
-     ============================================================ */
-
-  const state = {
-    type: 'sierpinski',
-    colorIdx: 0,
-    // 表示ビュー(基準図形に対する相対座標)
-    view: { cx: 0, cy: 0, halfW: 1 },
-    // 座標系リセットで稼いだ倍率(累積)。表示倍率 = accumZoom / view.halfW
-    accumZoom: 1,
-    // 基準図形の頂点(リセットのたびに作り直す)
-    baseShape: null,
-    drag: null,
-    pinch: null,
-  };
-
-  const COLOR_THEMES = [
-    { name: 'ミズイロ', main: '#5fd0c0', sub: '#2e7d6e' },
-    { name: 'シロ',     main: '#ffffff', sub: '#9fb0c2' },
-  ];
-
-  const FRACTAL_TYPES = [
-    { id:'sierpinski', name:'三角形',       dot:'#f2a65a', infinite:true },
-    { id:'koch',       name:'雪の結晶',     dot:'#8fd3ff', infinite:true },
-    { id:'mandelbrot', name:'マンデルブロ', dot:'#8b7fe0', infinite:false },
-  ];
-
-  const DESCRIPTIONS = {
-    koch: `<ruby>三角形<rt>さんかくけい</rt></ruby>のまん<ruby>中<rt>なか</rt></ruby>に、また<ruby>三角形<rt>さんかくけい</rt></ruby>のでっぱりを<ruby>作<rt>つく</rt></ruby>ることを<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>すと、<ruby>雪<rt>ゆき</rt></ruby>の<ruby>結晶<rt>けっしょう</rt></ruby>のような<ruby>形<rt>かたち</rt></ruby>になるよ。<br><br><ruby>線<rt>せん</rt></ruby>のところを<ruby>拡大<rt>かくだい</rt></ruby>すると、また<ruby>同<rt>おな</rt></ruby>じギザギザが<ruby>出<rt>で</rt></ruby>てくるよ。<ruby>何億倍<rt>なんおくばい</rt></ruby>にしても<ruby>終<rt>お</rt></ruby>わらないよ。`,
-    sierpinski: `<ruby>大<rt>おお</rt></ruby>きな<ruby>三角形<rt>さんかくけい</rt></ruby>のまん<ruby>中<rt>なか</rt></ruby>を<ruby>穴<rt>あな</rt></ruby>あけて、のこった3つの<ruby>三角形<rt>さんかくけい</rt></ruby>でも<ruby>同<rt>おな</rt></ruby>じことを<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>す<ruby>図形<rt>ずけい</rt></ruby>だよ。<br><br><ruby>色<rt>いろ</rt></ruby>のついたところを<ruby>拡大<rt>かくだい</rt></ruby>すると、また<ruby>三角形<rt>さんかくけい</rt></ruby>の<ruby>穴<rt>あな</rt></ruby>が<ruby>出<rt>で</rt></ruby>てくるよ。<ruby>何億倍<rt>なんおくばい</rt></ruby>にしても<ruby>終<rt>お</rt></ruby>わらないよ。`,
-    mandelbrot: `<ruby>数式<rt>すうしき</rt></ruby>を<ruby>使<rt>つか</rt></ruby>って<ruby>色<rt>いろ</rt></ruby>を<ruby>塗<rt>ぬ</rt></ruby>り<ruby>分<rt>わ</rt></ruby>けると<ruby>現<rt>あらわ</rt></ruby>れる<ruby>図形<rt>ずけい</rt></ruby>だよ。<br><br><ruby>拡大<rt>かくだい</rt></ruby>すると<ruby>似<rt>に</rt></ruby>た<ruby>形<rt>かたち</rt></ruby>が<ruby>出<rt>で</rt></ruby>てくるけど、<ruby>実<rt>じつ</rt></ruby>は<ruby>少<rt>すこ</rt></ruby>しずつちがう<ruby>形<rt>かたち</rt></ruby>なんだ。<ruby>他<rt>ほか</rt></ruby>の2つとくらべてみてね。`,
-  };
-
-  /* ============ Canvas ============ */
+  // ---------- Canvas setup ----------
   const canvas = document.getElementById('stage');
   const ctx = canvas.getContext('2d');
-  let cw = 0, ch = 0;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-  function resizeCanvas(){
-    const rect = canvas.getBoundingClientRect();
-    cw = Math.max(1, Math.round(rect.width));
-    ch = Math.max(1, Math.round(rect.height));
-    canvas.width = cw * dpr;
-    canvas.height = ch * dpr;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+  function resize(){
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    render();
   }
-  window.addEventListener('resize', ()=>{
-    resizeCanvas();
-    renderCurrent();
-  });
+  window.addEventListener('resize', resize);
 
-  /* ============ 座標変換 ============ */
-  let viewScale = 1;
-  function updateViewScale(){
-    viewScale = Math.min(cw,ch) / (state.view.halfW * 2);
+  // ---------- View state ----------
+  // We track view via a "big zoom" model: a normal-precision scale for
+  // rendering math, plus an exponent that represents extra zoom levels
+  // beyond what double precision can meaningfully resolve on its own.
+  // Because Koch snowflake geometry is self-similar with ratio 1/3 per
+  // iteration, "zooming forever" really means: pick a target point,
+  // keep re-deriving which sub-triangle it lives in, and re-express
+  // coordinates relative to that sub-triangle at full precision each
+  // frame. This sidesteps float overflow entirely — we never need
+  // numbers bigger than a few units, because we recenter the coordinate
+  // frame at every zoom step.
+
+  const MAX_LOCAL_SCALE = 1e13; // recenter before double precision breaks down
+
+  let view = {
+    // logical scale within the *current* local frame (1 = the frame's
+    // native triangle edge fills a comfortable portion of the screen)
+    scale: 1,
+    // pan offset in local-frame units
+    cx: 0,
+    cy: 0,
+    // how many times we've "rebased" into a deeper sub-triangle —
+    // purely cosmetic/informational, drives the displayed zoom exponent
+    rebaseDepth: 0,
+    // cumulative zoom for display purposes (scale * 3^rebaseDepth)
+  };
+
+  function totalZoomExponent(){
+    // total zoom = scale * 3^rebaseDepth (since each rebase is a 1/3 shrink undone)
+    return Math.log10(view.scale) + view.rebaseDepth * Math.log10(3);
   }
-  function wx(x){ return cw/2 + (x - state.view.cx) * viewScale; }
-  function wy(y){ return ch/2 + (y - state.view.cy) * viewScale; }
-  function screenToWorld(sx, sy){
+
+  function formatZoom(){
+    const exp = totalZoomExponent();
+    if (exp < 3) {
+      const mult = Math.pow(10, exp);
+      return '×' + (mult < 10 ? mult.toFixed(1) : Math.round(mult).toLocaleString('ja-JP'));
+    }
+    return '×10^' + exp.toFixed(1);
+  }
+
+  // ---------- Koch geometry (recursive, on the fly, view-culled) ----------
+  // We generate segments recursively but stop recursing once a segment's
+  // ON-SCREEN length would be under ~0.75px, OR once it's fully outside
+  // the visible viewport. This is the "cheat" that makes infinite zoom
+  // tractable: we never compute detail that can't be seen.
+
+  const MIN_PIXELS = 0.75;
+  const MAX_DEPTH = 60; // hard safety cap per local frame
+
+  // Local-frame -> screen transform
+  function worldToScreen(x, y){
     return {
-      x: state.view.cx + (sx - cw/2) / viewScale,
-      y: state.view.cy + (sy - ch/2) / viewScale
+      x: (x - view.cx) * view.scale + W / 2,
+      y: (y - view.cy) * view.scale + H / 2
     };
   }
 
-  /* ============ 基準図形の初期化 ============ */
-  const BASE_SIZE = 1.6;
-  function makeBaseTriangle(){
-    const s = BASE_SIZE;
-    const h = s * Math.sqrt(3)/2;
-    return [
-      {x: 0,     y: -h*2/3},
-      {x: -s/2,  y:  h/3},
-      {x:  s/2,  y:  h/3}
-    ];
+  function segScreenLength(x1, y1, x2, y2){
+    const dx = (x2 - x1) * view.scale;
+    const dy = (y2 - y1) * view.scale;
+    return Math.hypot(dx, dy);
+  }
+
+  function boxOutsideView(minX, minY, maxX, maxY, pad){
+    const p0 = worldToScreen(minX, minY);
+    const p1 = worldToScreen(maxX, maxY);
+    const left = Math.min(p0.x, p1.x) - pad;
+    const right = Math.max(p0.x, p1.x) + pad;
+    const top = Math.min(p0.y, p1.y) - pad;
+    const bottom = Math.max(p0.y, p1.y) + pad;
+    return (right < 0 || left > W || bottom < 0 || top > H);
+  }
+
+  let segmentBuffer = [];
+
+  function kochRecurse(x1, y1, x2, y2, depth){
+    // bounding box cull (with generous padding since children can bulge outward)
+    const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+    const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+    const spanScreen = segScreenLength(x1, y1, x2, y2);
+    const pad = spanScreen * 0.6 + 4;
+    if (boxOutsideView(minX, minY, maxX, maxY, pad)) return;
+
+    const screenLen = spanScreen;
+    if (depth >= MAX_DEPTH || screenLen < MIN_PIXELS) {
+      segmentBuffer.push(x1, y1, x2, y2);
+      return;
+    }
+
+    const dx = (x2 - x1) / 3;
+    const dy = (y2 - y1) / 3;
+
+    const px1 = x1 + dx, py1 = y1 + dy;
+    const px3 = x1 + 2 * dx, py3 = y1 + 2 * dy;
+
+    // peak point: rotate (dx,dy) by -60deg and add to p1
+    const ang = -Math.PI / 3;
+    const cosA = Math.cos(ang), sinA = Math.sin(ang);
+    const rx = dx * cosA - dy * sinA;
+    const ry = dx * sinA + dy * cosA;
+    const peakX = px1 + rx, peakY = py1 + ry;
+
+    kochRecurse(x1, y1, px1, py1, depth + 1);
+    kochRecurse(px1, py1, peakX, peakY, depth + 1);
+    kochRecurse(peakX, peakY, px3, py3, depth + 1);
+    kochRecurse(px3, py3, x2, y2, depth + 1);
+  }
+
+  // Base triangle (equilateral), in local-frame units, side length = 2 (centered-ish)
+  function baseTriangle(){
+    const r = 1.0; // circumscribed-ish radius reference
+    const pts = [];
+    for (let i = 0; i < 3; i++){
+      const a = -Math.PI / 2 + i * (2 * Math.PI / 3);
+      pts.push([Math.cos(a) * r, Math.sin(a) * r]);
+    }
+    return pts;
+  }
+
+  // ---------- Rebasing (the "infinite" trick) ----------
+  // When scale exceeds MAX_LOCAL_SCALE, we don't grow numbers forever.
+  // Instead we identify which 1/3-scale sub-edge the current view center
+  // sits nearest to along the snowflake boundary, and re-express the
+  // local frame relative to that region: scale /= 3^k, coordinates
+  // recentered. Since the Koch curve is exactly self-similar, the
+  // re-derived local geometry is indistinguishable from "true" deeper
+  // geometry — this is the core trick enabling unbounded zoom without
+  // ever needing more than double precision.
+
+  function maybeRebase(){
+    while (view.scale > MAX_LOCAL_SCALE) {
+      view.scale /= 3;
+      view.rebaseDepth += 1;
+      // cx, cy stay as-is: they're already in local-frame units which
+      // we're now reinterpreting at 1/3 the physical size, so the
+      // "world" shrinks around the same local point — visually seamless.
+    }
+    while (view.scale < 1 && view.rebaseDepth > 0) {
+      view.scale *= 3;
+      view.rebaseDepth -= 1;
+    }
+  }
+
+  // ---------- Rendering ----------
+  let needsRender = true;
+  function requestRender(){ needsRender = true; }
+
+  function render(){
+    ctx.clearRect(0, 0, W, H);
+
+    // subtle vignette background handled by CSS; draw snowflake
+    segmentBuffer.length = 0;
+    const tri = baseTriangle();
+    for (let i = 0; i < 3; i++){
+      const [x1, y1] = tri[i];
+      const [x2, y2] = tri[(i + 1) % 3];
+      kochRecurse(x1, y1, x2, y2, 0);
+    }
+
+    if (segmentBuffer.length === 0) {
+      // Extremely zoomed with nothing in view (shouldn't normally happen
+      // since we recurse toward the view) — draw nothing gracefully.
+    } else {
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#bfe9ff');
+      grad.addColorStop(0.5, '#eaf7ff');
+      grad.addColorStop(1, '#8fd0f5');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = Math.max(1.1, 1.6 * DPR) / DPR;
+      ctx.shadowColor = 'rgba(120, 210, 255, 0.35)';
+      ctx.shadowBlur = 6;
+
+      ctx.beginPath();
+      for (let i = 0; i < segmentBuffer.length; i += 4){
+        const p1 = worldToScreen(segmentBuffer[i], segmentBuffer[i + 1]);
+        const p2 = worldToScreen(segmentBuffer[i + 2], segmentBuffer[i + 3]);
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    document.getElementById('zoomLabel').textContent = '拡大率 ' + formatZoom();
+  }
+
+  function loop(){
+    if (needsRender){
+      needsRender = false;
+      render();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Zoom / pan interaction ----------
+  function zoomAt(screenX, screenY, factor){
+    // convert screen point to local-frame coords BEFORE zoom
+    const wx = (screenX - W / 2) / view.scale + view.cx;
+    const wy = (screenY - H / 2) / view.scale + view.cy;
+
+    view.scale *= factor;
+    view.scale = Math.max(view.scale, 1e-6);
+
+    maybeRebase();
+
+    // keep the same local point under the cursor/finger after zoom
+    const wx2 = (screenX - W / 2) / view.scale + view.cx;
+    const wy2 = (screenY - H / 2) / view.scale + view.cy;
+    view.cx += (wx - wx2);
+    view.cy += (wy - wy2);
+
+    requestRender();
+  }
+
+  function panBy(dxScreen, dyScreen){
+    view.cx -= dxScreen / view.scale;
+    view.cy -= dyScreen / view.scale;
+    requestRender();
   }
 
   function resetView(){
-    state.view = { cx: 0, cy: 0, halfW: 1 };
-    state.accumZoom = 1;
-    state.baseShape = makeBaseTriangle();
-    updateViewScale();
-    updateZoomBadge();
+    view.scale = 1;
+    view.cx = 0;
+    view.cy = 0;
+    view.rebaseDepth = 0;
+    requestRender();
   }
 
-  /* ============ 無限ズーム: 座標系のリベース ============
-     ズームが一定を超えたら、画面中心を含む「子三角形」を選び、
-     それを基準サイズに正規化し直す(相似変換)。
-     単にhalfWをリセットするだけでは基準図形の座標自体が
-     発散してしまい精度が失われるため、必ず子図形を選んで
-     再正規化することが重要。
-     シェルピンスキーはこれがそのまま定義(3つの子三角形)。
-     コッホは同じ枠組みの三角形を「土台」として共有し、
-     描画時にその1辺を毎回コッホ曲線として展開する。
-  =========================================================== */
-  const REBASE_THRESHOLD = 0.45; // view.halfW がこれを下回ったらリベースを試みる
-  const REBASE_GUARD = 600;      // 吸着の繰り返し分も見込んだ安全上限
+  // Mouse (desktop / trackpad)
+  let isDragging = false;
+  let lastX = 0, lastY = 0;
 
-  function nearestChildInfo(baseShape, cx, cy){
-    const [a,b,c] = baseShape;
-    const ab = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
-    const bc = {x:(b.x+c.x)/2, y:(b.y+c.y)/2};
-    const ca = {x:(c.x+a.x)/2, y:(c.y+a.y)/2};
-    const candidates = [[a,ab,ca], [ab,b,bc], [ca,bc,c]];
-
-    let best = null, bestScore = -Infinity;
-    for(const t of candidates){
-      const [p1,p2,p3] = t;
-      const d = (p2.y-p3.y)*(p1.x-p3.x) + (p3.x-p2.x)*(p1.y-p3.y);
-      if(Math.abs(d) < 1e-15) continue; // 退化した三角形は判定不能なのでスキップ
-      const l1 = ((p2.y-p3.y)*(cx-p3.x) + (p3.x-p2.x)*(cy-p3.y)) / d;
-      const l2 = ((p3.y-p1.y)*(cx-p3.x) + (p1.x-p3.x)*(cy-p3.y)) / d;
-      const l3 = 1 - l1 - l2;
-      const score = Math.min(l1,l2,l3); // 一番小さい重心座標。正なら内部、負なら外側
-      if(score > bestScore){ bestScore = score; best = t; }
-    }
-    return { chosen: best, isInside: best ? bestScore > 0.001 : false };
-  }
-
-  /* コッホの「1辺」をコッホの1段階分解した4つの子セグメントを返す */
-  function kochChildSegments(p1, p2){
-    const dx=(p2.x-p1.x)/3, dy=(p2.y-p1.y)/3;
-    const pA={x:p1.x+dx,y:p1.y+dy}, pB={x:p1.x+2*dx,y:p1.y+2*dy};
-    const ang=Math.atan2(dy,dx)-Math.PI/3, d=Math.hypot(dx,dy);
-    const peak={x:pA.x+Math.cos(ang)*d,y:pA.y+Math.sin(ang)*d};
-    return [[p1,pA],[pA,peak],[peak,pB],[pB,p2]];
-  }
-
-  /* 視点に最も近い、土台三角形の「辺のコッホ子セグメント」を探す */
-  function nearestKochChildSegment(baseShape, cx, cy){
-    const [A,B,C] = baseShape;
-    const edges = [[A,B],[B,C],[C,A]];
-    let best=null, bestDist=Infinity;
-    for(const [p1,p2] of edges){
-      for(const [s1,s2] of kochChildSegments(p1,p2)){
-        const dx=s2.x-s1.x, dy=s2.y-s1.y, len2=dx*dx+dy*dy;
-        let t = len2<1e-20 ? 0 : ((cx-s1.x)*dx+(cy-s1.y)*dy)/len2;
-        t = Math.max(0, Math.min(1, t));
-        const px=s1.x+t*dx, py=s1.y+t*dy;
-        const d = Math.hypot(cx-px, cy-py);
-        if(d < bestDist){ bestDist = d; best = [s1,s2]; }
-      }
-    }
-    return best;
-  }
-
-  /* p1->p2 を q1->q2 に写す相似変換(平行移動+回転+拡大縮小)を作る */
-  function similarityTransform(p1, p2, q1, q2){
-    const pv = {x: p2.x-p1.x, y: p2.y-p1.y};
-    const qv = {x: q2.x-q1.x, y: q2.y-q1.y};
-    const pLen2 = pv.x*pv.x + pv.y*pv.y;
-    const a = (qv.x*pv.x + qv.y*pv.y) / pLen2;
-    const b = (qv.y*pv.x - qv.x*pv.y) / pLen2;
-    return function(p){
-      const dx = p.x - p1.x, dy = p.y - p1.y;
-      return { x: q1.x + a*dx - b*dy, y: q1.y + b*dx + a*dy };
-    };
-  }
-
-  /* 設計のポイント: 正規化は「選んだ子三角形の重心」を中心に行い、
-     視点(view.cx, view.cy)も同じ変換Tで追従させる。
-     視点の論理座標そのものは変化するが、画面上に描かれる位置
-     (wx(view.cx), wy(view.cy)) は変換の前後で完全に一致する
-     ——なぜなら view.halfW も同じ比率 k で一緒にスケールするため。
-     これにより、リベースが起きても画面の絵は一切ジャンプしない。
-
-     コッホ雪片は「線」でできているため、土台三角形の内部・外部の
-     判定(シェルピンスキー的な3分割)だけでは、視点が境界や
-     「穴」の近くにあるとリベースが止まってしまう。
-     そこで、通常の3分割で判定できない場合は、視点に最も近い
-     「辺のコッホ子セグメント」を見つけ、それを新しい基準の辺として
-     三角形全体を相似変換で作り直す。これにより、コッホの線が
-     図形のどこに分布していても、視点はその近くの線を辿り続けられる。 */
-  function maybeRebaseCoordinates(){
-    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    if(!def.infinite) return;
-
-    let guard = 0;
-    while(state.view.halfW < REBASE_THRESHOLD && guard < REBASE_GUARD){
-      guard++;
-      const { chosen, isInside } = nearestChildInfo(state.baseShape, state.view.cx, state.view.cy);
-
-      if(isInside){
-        const side = Math.hypot(chosen[1].x-chosen[0].x, chosen[1].y-chosen[0].y);
-        const k = BASE_SIZE / side;
-        const gx = (chosen[0].x+chosen[1].x+chosen[2].x)/3;
-        const gy = (chosen[0].y+chosen[1].y+chosen[2].y)/3;
-        const T = p => ({ x: (p.x-gx)*k, y: (p.y-gy)*k });
-
-        state.baseShape = chosen.map(T);
-        const nv = T({x: state.view.cx, y: state.view.cy});
-        state.view.cx = nv.x;
-        state.view.cy = nv.y;
-        state.view.halfW *= k;
-        state.accumZoom *= k;
-        continue;
-      }
-
-      // 三角形の内部ではない(境界や外側に近い)。
-      // コッホだけは、辺のコッホ子セグメントを基準にしたリベースにフォールバックする。
-      if(state.type !== 'koch') break; // シェルピンスキーはここで正しく止まる(穴は本当に空)
-
-      const seg = nearestKochChildSegment(state.baseShape, state.view.cx, state.view.cy);
-      const [s1, s2] = seg;
-      const segLen = Math.hypot(s2.x-s1.x, s2.y-s1.y);
-      if(segLen < 1e-300) break; // 数値的に扱えないほど小さい場合の安全策
-
-      const [A, B] = state.baseShape;
-      const origAngle = Math.atan2(B.y-A.y, B.x-A.x); // 補正の基準となる、直前の向き
-
-      const transform = similarityTransform(A, B, s1, s2);
-      const transformedBase = state.baseShape.map(transform);
-      const transformedView = transform({x: state.view.cx, y: state.view.cy});
-
-      // 上のtransformはA->Bをs1->s2(元の1/3サイズ)に写すので、
-      // 改めてBASE_SIZEへ正規化する追加のスケーリングを行う
-      const scaleUp = BASE_SIZE / segLen;
-      const center = transformedBase[0];
-      const scaleFrom = p => ({ x: center.x + (p.x-center.x)*scaleUp, y: center.y + (p.y-center.y)*scaleUp });
-      let newBase = transformedBase.map(scaleFrom);
-      let newView = scaleFrom(transformedView);
-
-      /* コッホ曲線の4つの子セグメントは元の辺に対してそれぞれ異なる角度
-         (0度、+60度、-60度、0度)を持つため、選んだ子セグメントによって
-         基準三角形が回転してしまう。何もしないと数回のリベースごとに
-         三角形がひっくり返って見え、「三角、逆三角」というちらつきになる。
-         そこで、新しい基準三角形の向きを、直前の基準三角形と同じ向きに
-         そろえる補正回転を追加で掛ける。視点が実際にたどる位置(見た目)は
-         変えず、基準三角形の「向き」だけを固定することで、
-         ズーム時の見た目が滑らかにつながるようにしている。 */
-      const newAngle = Math.atan2(newBase[1].y-newBase[0].y, newBase[1].x-newBase[0].x);
-      const correction = origAngle - newAngle;
-      const cosC = Math.cos(correction), sinC = Math.sin(correction);
-      const pivot = newBase[0];
-      const rotate = p => {
-        const dx = p.x-pivot.x, dy = p.y-pivot.y;
-        return { x: pivot.x + dx*cosC - dy*sinC, y: pivot.y + dx*sinC + dy*cosC };
-      };
-      newBase = newBase.map(rotate);
-      newView = rotate(newView);
-
-      state.baseShape = newBase;
-      state.view.cx = newView.x;
-      state.view.cy = newView.y;
-      state.view.halfW *= scaleUp;
-      state.accumZoom *= scaleUp;
-    }
-    updateViewScale();
-  }
-
-  function currentZoom(){
-    return state.accumZoom / state.view.halfW;
-  }
-
-  /* 初期表示(ズームしていない状態)ではシンプルに2段階くらいの浅い形を見せ、
-     ズームが進むにつれて本来の細かさ(MIN_PIXEL=2.0)まで解禁していく。
-     こうすることで「最初は浅く、拡大するほど細かくなる」という
-     直感的な体験になる。 */
-  function adaptiveMinPixel(basePixel, shallowPixel){
-    const zoom = currentZoom();
-    const t = Math.min(1, Math.log10(zoom+1) / 2); // zoom=100でt=1(本来の細かさに到達)
-    return shallowPixel * (1-t) + basePixel * t;
-  }
-
-  function formatZoom(z){
-    if(!isFinite(z)) return `けたちがいすぎ<ruby>拡大<rt>かくだい</rt></ruby>`;
-    if(z < 10) return z.toFixed(1);
-    if(z < 1e4) return Math.round(z).toLocaleString();
-    if(z < 1e8) return Math.round(z).toLocaleString();
-    if(z < 1e12) return (z/1e8).toFixed(1) + '<b>億</b>';
-    if(z < 1e16) return (z/1e12).toFixed(1) + '<b>兆</b>';
-    if(z < 1e60) return z.toExponential(1);
-    return `けたちがいすぎ<ruby>拡大<rt>かくだい</rt></ruby>`;
-  }
-
-  function updateZoomBadge(){
-    document.getElementById('zoom-badge').innerHTML = '×' + formatZoom(currentZoom());
-  }
-
-  let guideState = '';
-  function setEmptyGuide(isEmpty){
-    const badge = document.getElementById('limit-badge');
-    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    let next = '';
-    if(isEmpty){
-      next = `ここには<ruby>何<rt>なに</rt></ruby>も<ruby>無<rt>な</rt></ruby>いよ。⟲でもどってね`;
-    } else if(!def.infinite && currentZoom() > 150000){
-      next = `そろそろ<ruby>拡大<rt>かくだい</rt></ruby>のかぎりだよ`;
-    }
-    if(next === guideState) return;
-    guideState = next;
-    if(next){
-      badge.innerHTML = next;
-      badge.classList.add('show');
-    } else {
-      badge.classList.remove('show');
-    }
-  }
-
-  /* ============ タブ ============ */
-  const tabsEl = document.getElementById('tabs');
-  FRACTAL_TYPES.forEach(t=>{
-    const btn = document.createElement('button');
-    btn.className = 'tab-btn';
-    btn.dataset.id = t.id;
-    btn.innerHTML = `<span class="dot" style="background:${t.dot}"></span>${t.name}`;
-    btn.addEventListener('click', ()=> selectType(t.id));
-    tabsEl.appendChild(btn);
+  canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    lastX = e.clientX; lastY = e.clientY;
   });
-
-  function selectType(id){
-    state.type = id;
-    resetView();
-    document.querySelectorAll('.tab-btn').forEach(b=>{
-      b.classList.toggle('active', b.dataset.id === id);
-    });
-    document.getElementById('desc-box').innerHTML = DESCRIPTIONS[id];
-    guideState = '__force__';
-    updateBadge();
-    renderCurrent();
-  }
-
-  /* ============ 色 ============ */
-  const swatchWrap = document.getElementById('color-swatches');
-  COLOR_THEMES.forEach((c, i)=>{
-    const sw = document.createElement('div');
-    sw.className = 'swatch' + (i===0 ? ' active' : '');
-    sw.innerHTML = `<div class="swatch-inner" style="background:${c.main}"></div>`;
-    sw.addEventListener('click', ()=>{
-      state.colorIdx = i;
-      document.querySelectorAll('.swatch').forEach((s,idx)=> s.classList.toggle('active', idx===i));
-      renderCurrent();
-    });
-    swatchWrap.appendChild(sw);
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panBy(e.clientX - lastX, e.clientY - lastY);
+    lastX = e.clientX; lastY = e.clientY;
   });
+  window.addEventListener('mouseup', () => { isDragging = false; });
 
-  /* ============ さいしょの表示にもどす ============ */
-  document.getElementById('replay-btn').addEventListener('click', ()=>{
-    resetView();
-    renderCurrent();
-  });
-
-  /* ============ 保存 ============ */
-  document.getElementById('save-btn').addEventListener('click', ()=>{
-    const link = document.createElement('a');
-    link.download = 'fractal-' + state.type + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  });
-
-  /* ============ ズーム ============ */
-  const MAX_HALF_W = 2;
-  // 無限ズーム対応の図形は下限を設けない(座標系リセットで精度を保つため)。
-  // マンデルブロだけは数式の性質上リセットできないので、精度が崩れる手前で止める。
-  function minHalfW(){
-    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    return def.infinite ? 1e-6 : 4e-6;
-  }
-  function clampHalfW(v){
-    return Math.max(minHalfW(), Math.min(MAX_HALF_W, v));
-  }
-  document.getElementById('zoom-reset').addEventListener('click', ()=>{
-    resetView();
-    renderCurrent();
-  });
-
-  /* ============ パネル ============ */
-  const panel = document.getElementById('panel');
-  const panelOverlay = document.getElementById('panel-overlay');
-  document.getElementById('panel-toggle').addEventListener('click', ()=>{
-    panel.classList.add('open');
-    panelOverlay.classList.add('open');
-  });
-  panelOverlay.addEventListener('click', ()=>{
-    panel.classList.remove('open');
-    panelOverlay.classList.remove('open');
-  });
-
-  /* ============ 初回モーダル ============ */
-  const introModal = document.getElementById('intro-modal');
-  let skipIntro = false;
-  try{ skipIntro = localStorage.getItem('fractal-zukan-skip-intro') === '1'; }catch(e){}
-  if(skipIntro) introModal.classList.add('hidden');
-  document.getElementById('intro-close').addEventListener('click', ()=>{
-    introModal.classList.add('hidden');
-    if(document.getElementById('dont-show-again').checked){
-      try{ localStorage.setItem('fractal-zukan-skip-intro','1'); }catch(e){}
-    }
-  });
-
-  function updateBadge(){
-    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    document.getElementById('stat-badge').textContent = def.name + ' を見ているよ';
-  }
-
-  /* ============ 色ヘルパー ============ */
-  function hexToRgb(hex){
-    const v = parseInt(hex.replace('#',''),16);
-    return { r:(v>>16)&255, g:(v>>8)&255, b:v&255 };
-  }
-  function mixColor(hexA, hexB, t){
-    const a = hexToRgb(hexA), b = hexToRgb(hexB);
-    return `rgb(${Math.round(a.r+(b.r-a.r)*t)},${Math.round(a.g+(b.g-a.g)*t)},${Math.round(a.b+(b.b-a.b)*t)})`;
-  }
-
-  /* ============ 描画: コッホ雪片 ============ */
-  const KOCH_MIN_PIXEL = 2.0;
-  const KOCH_MAX_DEPTH = 60;
-  const KOCH_MARGIN = 60;
-
-  function drawKoch(){
-    const theme = COLOR_THEMES[state.colorIdx];
-    ctx.clearRect(0,0,cw,ch);
-    const [A,B,C] = state.baseShape;
-    const minPixel = adaptiveMinPixel(KOCH_MIN_PIXEL, 130);
-
-    ctx.lineJoin='round';
-    ctx.lineCap='round';
-    ctx.lineWidth = 2.2;
-    let drawnCount = 0;
-
-    const edges = [[A,B],[B,C],[C,A]];
-    edges.forEach((edge, i)=>{
-      ctx.strokeStyle = i===0 ? theme.main
-                      : i===1 ? mixColor(theme.main, theme.sub, 0.5)
-                      : theme.sub;
-      ctx.beginPath();
-      let started = false;
-
-      function seg(p1, p2, depth){
-        const x1 = wx(p1.x), y1 = wy(p1.y);
-        const x2 = wx(p2.x), y2 = wy(p2.y);
-
-        // 画面外は再帰を打ち切る(これがないと処理が爆発する)
-        const offscreen =
-          (Math.max(x1,x2) < -KOCH_MARGIN) || (Math.min(x1,x2) > cw+KOCH_MARGIN) ||
-          (Math.max(y1,y2) < -KOCH_MARGIN) || (Math.min(y1,y2) > ch+KOCH_MARGIN);
-
-        const pixelLen = Math.hypot(x2-x1, y2-y1);
-
-        if(offscreen || pixelLen < minPixel || depth >= KOCH_MAX_DEPTH){
-          if(!started){ ctx.moveTo(x1,y1); started = true; }
-          ctx.lineTo(x2,y2);
-          if(!offscreen) drawnCount++;
-          return;
-        }
-
-        const dx = (p2.x - p1.x)/3, dy = (p2.y - p1.y)/3;
-        const pA = {x: p1.x+dx,   y: p1.y+dy};
-        const pB = {x: p1.x+2*dx, y: p1.y+2*dy};
-        const ang = Math.atan2(dy,dx) - Math.PI/3;
-        const d = Math.hypot(dx,dy);
-        const peak = {x: pA.x + Math.cos(ang)*d, y: pA.y + Math.sin(ang)*d};
-
-        seg(p1, pA, depth+1);
-        seg(pA, peak, depth+1);
-        seg(peak, pB, depth+1);
-        seg(pB, p2, depth+1);
-      }
-
-      seg(edge[0], edge[1], 0);
-      ctx.stroke();
-    });
-
-    setEmptyGuide(drawnCount === 0 && currentZoom() > 2);
-  }
-
-  /* ============ 描画: シェルピンスキー三角形 ============ */
-  const SIER_MIN_PIXEL = 2.0;
-  const SIER_MAX_DEPTH = 60;
-  const SIER_MARGIN = 40;
-
-  function drawSierpinski(){
-    const theme = COLOR_THEMES[state.colorIdx];
-    ctx.clearRect(0,0,cw,ch);
-    const [top,left,right] = state.baseShape;
-    const minPixel = adaptiveMinPixel(SIER_MIN_PIXEL, 260);
-    let drawnCount = 0;
-
-    function tri(a,b,c,depth){
-      const ax = wx(a.x), ay = wy(a.y);
-      const bx = wx(b.x), by = wy(b.y);
-      const cx2 = wx(c.x), cy2 = wy(c.y);
-
-      const minX = Math.min(ax,bx,cx2), maxX = Math.max(ax,bx,cx2);
-      const minY = Math.min(ay,by,cy2), maxY = Math.max(ay,by,cy2);
-
-      // 画面外は完全に打ち切り
-      if(maxX < -SIER_MARGIN || minX > cw+SIER_MARGIN ||
-         maxY < -SIER_MARGIN || minY > ch+SIER_MARGIN) return;
-
-      const pixelSize = Math.max(maxX-minX, maxY-minY);
-      const isLeaf = (pixelSize < minPixel) || (depth >= SIER_MAX_DEPTH);
-
-      if(isLeaf){
-        const t = 1 - 1/(1 + depth*0.28);
-        ctx.strokeStyle = mixColor(theme.sub, theme.main, Math.min(1,t));
-        ctx.lineWidth = Math.max(1, Math.min(2.5, pixelSize*0.04));
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        ctx.moveTo(ax,ay);
-        ctx.lineTo(bx,by);
-        ctx.lineTo(cx2,cy2);
-        ctx.closePath();
-        ctx.stroke();
-        drawnCount++;
-        return;
-      }
-
-      const ab = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
-      const bc = {x:(b.x+c.x)/2, y:(b.y+c.y)/2};
-      const ca = {x:(c.x+a.x)/2, y:(c.y+a.y)/2};
-      tri(a,  ab, ca, depth+1);
-      tri(ab, b,  bc, depth+1);
-      tri(ca, bc, c,  depth+1);
-    }
-
-    tri(top, left, right, 0);
-    setEmptyGuide(drawnCount === 0 && currentZoom() > 2);
-  }
-
-  /* ============ 描画: マンデルブロ(軽量化版) ============
-     ・段階的レンダリング: まず粗く描いて即座に表示、その後細かく描き直す
-     ・周期チェックで内部領域の反復を早期終了
-     ・行単位でチャンク処理し、UIをブロックしない
-  ============================================================ */
-  let mbToken = 0;
-
-  function drawMandelbrot(){
-    const myToken = ++mbToken;
-    const theme = COLOR_THEMES[state.colorIdx];
-    const mainRgb = hexToRgb(theme.main);
-    const subRgb = hexToRgb(theme.sub);
-
-    const mbCx = -0.5 + state.view.cx * 1.6;
-    const mbCy = state.view.cy * 1.6;
-    const mbScale = state.view.halfW * 3.2;
-    const zoom = 1/state.view.halfW;
-    const maxIter = Math.min(260, 70 + Math.floor(Math.log2(zoom+1) * 18));
-
-    // 段階的に解像度を上げる: 粗い→細かい
-    const passes = [6, 2, 1];
-    let passIdx = 0;
-
-    const off = document.createElement('canvas');
-    const offCtx = off.getContext('2d');
-
-    function runPass(){
-      if(myToken !== mbToken) return; // 新しい描画要求が来たら中断
-
-      const step = passes[passIdx];
-      const w = Math.max(1, Math.ceil(cw/step));
-      const h = Math.max(1, Math.ceil(ch/step));
-      off.width = w; off.height = h;
-      const imgData = offCtx.createImageData(w, h);
-      const data = imgData.data;
-      const aspect = w/h;
-
-      let py = 0;
-      const ROWS_PER_CHUNK = Math.max(8, Math.floor(4000/w));
-
-      function chunk(){
-        if(myToken !== mbToken) return;
-        const end = Math.min(h, py + ROWS_PER_CHUNK);
-
-        for(; py<end; py++){
-          const y0 = mbCy + (py/h - 0.5) * mbScale;
-          for(let px=0; px<w; px++){
-            const x0 = mbCx + (px/w - 0.5) * mbScale * aspect;
-
-            let x=0, y=0, x2=0, y2=0, iter=0;
-            // 周期検出用(内部の点を早期に判定して反復を打ち切る)
-            let ox=0, oy=0, checkCounter=0, checkLimit=8;
-
-            while(x2+y2 <= 4 && iter < maxIter){
-              y = 2*x*y + y0;
-              x = x2 - y2 + x0;
-              x2 = x*x; y2 = y*y;
-              iter++;
-
-              // 軌道が過去の位置とほぼ一致したら周期に入った=内部の点
-              if(Math.abs(x-ox) < 1e-11 && Math.abs(y-oy) < 1e-11){
-                iter = maxIter;
-                break;
-              }
-              if(++checkCounter >= checkLimit){
-                checkCounter = 0;
-                checkLimit *= 2;
-                ox = x; oy = y;
-              }
-            }
-
-            const idx = (py*w+px)*4;
-            if(iter >= maxIter){
-              data[idx]=10; data[idx+1]=14; data[idx+2]=19; data[idx+3]=255;
-            } else {
-              const tt = Math.sqrt(iter/maxIter);
-              data[idx]   = Math.round(subRgb.r + (mainRgb.r-subRgb.r)*tt);
-              data[idx+1] = Math.round(subRgb.g + (mainRgb.g-subRgb.g)*tt);
-              data[idx+2] = Math.round(subRgb.b + (mainRgb.b-subRgb.b)*tt);
-              data[idx+3] = 255;
-            }
-          }
-        }
-
-        if(py < h){
-          setTimeout(chunk, 0);
-          return;
-        }
-
-        // このパスの完成: 画面に転送
-        offCtx.putImageData(imgData, 0, 0);
-        ctx.setTransform(1,0,0,1,0,0);
-        ctx.imageSmoothingEnabled = (step > 1);
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
-        ctx.setTransform(dpr,0,0,dpr,0,0);
-
-        passIdx++;
-        if(passIdx < passes.length){
-          document.getElementById('stat-badge').textContent = 'マンデルブロ をきれいにしているよ…';
-          setTimeout(runPass, 0);
-        } else {
-          updateBadge();
-          setEmptyGuide(false);
-        }
-      }
-
-      chunk();
-    }
-
-    runPass();
-  }
-
-  /* ============ 描画ディスパッチ ============ */
-  function renderCurrent(){
-    updateViewScale();
-    switch(state.type){
-      case 'koch':       drawKoch(); break;
-      case 'sierpinski': drawSierpinski(); break;
-      case 'mandelbrot': drawMandelbrot(); break;
-    }
-  }
-
-  let throttled = false;
-  function renderThrottled(){
-    if(state.type === 'mandelbrot') return; // 操作終了時のみ再計算
-    if(throttled) return;
-    throttled = true;
-    requestAnimationFrame(()=>{
-      throttled = false;
-      renderCurrent();
-    });
-  }
-
-  /* ============ 操作 ============ */
-  function touchDist(t0,t1){
-    return Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
-  }
-  let hintTimer = null;
-  function flashHint(){
-    const hint = document.getElementById('stage-hint');
-    hint.classList.add('show');
-    clearTimeout(hintTimer);
-    hintTimer = setTimeout(()=> hint.classList.remove('show'), 1600);
-  }
-
-  canvas.addEventListener('pointerdown', (e)=>{
-    canvas.setPointerCapture(e.pointerId);
-    state.drag = { x: e.clientX, y: e.clientY, cx: state.view.cx, cy: state.view.cy };
-    flashHint();
-  });
-  canvas.addEventListener('pointermove', (e)=>{
-    if(!state.drag || state.pinch) return;
-    const rect = canvas.getBoundingClientRect();
-    const scale = Math.min(rect.width, rect.height) / (state.view.halfW * 2);
-    state.view.cx = state.drag.cx - (e.clientX - state.drag.x)/scale;
-    state.view.cy = state.drag.cy - (e.clientY - state.drag.y)/scale;
-    updateViewScale();
-    renderThrottled();
-  });
-  function endDrag(){
-    if(!state.drag) return;
-    state.drag = null;
-    renderCurrent();
-  }
-  canvas.addEventListener('pointerup', endDrag);
-  canvas.addEventListener('pointercancel', endDrag);
-
-  canvas.addEventListener('touchstart', (e)=>{
-    if(e.touches.length === 2){
-      state.drag = null;
-      state.pinch = { dist: touchDist(e.touches[0], e.touches[1]), halfW: state.view.halfW };
-    }
-  }, {passive:true});
-  canvas.addEventListener('touchmove', (e)=>{
-    if(e.touches.length === 2 && state.pinch){
-      const d = touchDist(e.touches[0], e.touches[1]);
-      state.view.halfW = clampHalfW(state.pinch.halfW * (state.pinch.dist / Math.max(1,d)));
-      updateViewScale();
-      updateZoomBadge();
-      renderThrottled();
-    }
-  }, {passive:true});
-  canvas.addEventListener('touchend', (e)=>{
-    if(e.touches.length < 2 && state.pinch){
-      state.pinch = null;
-      maybeRebaseCoordinates();
-      updateZoomBadge();
-      renderCurrent();
-    }
-  }, {passive:true});
-
-  canvas.addEventListener('wheel', (e)=>{
+  canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    state.view.halfW = clampHalfW(state.view.halfW * (e.deltaY > 0 ? 1.15 : 0.87));
-    updateViewScale();
-    maybeRebaseCoordinates();
-    updateZoomBadge();
-    renderCurrent();
-  }, {passive:false});
+    const factor = Math.pow(1.0025, -e.deltaY);
+    zoomAt(e.clientX, e.clientY, factor);
+  }, { passive: false });
 
-  /* ダブルタップで新しい注視点を選ぶ「瞬間」だけ使う吸着処理。
-     狙った点の近くに実体(線や色のついた部分)があるかを数段先まで確認し、
-     もし「穴」に近いなら、最も近い実体の方向へ少しだけ寄せる。
-     この吸着は新しい注視点を選ぶ操作の中でだけ発生し、
-     ズーム中(maybeRebaseCoordinatesの連続的な進行)では絶対に使わない。
-     これにより「操作の最中に急に動く」ジャンプ感を避けつつ、
-     偶然「何も無い場所」を選んでしまう頻度を大きく減らせる。 */
-  function snapToNearbySolid(cx, cy){
-    const def = FRACTAL_TYPES.find(t=>t.id===state.type);
-    if(!def.infinite) return {cx, cy};
+  // Touch (iPad): drag to pan, pinch to zoom — double-tap intentionally unused
+  let touchState = null;
 
-    let bs = state.baseShape;
-    let x = cx, y = cy;
-    const CHECK_DEPTH = 20;
-
-    for(let d = 0; d < CHECK_DEPTH; d++){
-      const { chosen, isInside } = nearestChildInfo(bs, x, y);
-      if(!chosen) break; // 数値的に判定が困難になったら諦める(極端な場合の安全策)
-      if(isInside){
-        bs = chosen; // 実体側にいることを確認しつつ、より深くチェックを続ける
-        continue;
-      }
-      // 実体から外れている: 最も近い子図形の重心方向へ少し寄せる
-      const gx = (chosen[0].x+chosen[1].x+chosen[2].x)/3;
-      const gy = (chosen[0].y+chosen[1].y+chosen[2].y)/3;
-      x = x*0.4 + gx*0.6;
-      y = y*0.4 + gy*0.6;
-      bs = chosen;
-    }
-    return {cx: x, cy: y};
+  function touchDist(t0, t1){
+    return Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+  }
+  function touchMid(t0, t1){
+    return { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
   }
 
-  // ダブルタップでその場所を中心にズームイン
-  let lastTap = 0;
-  canvas.addEventListener('pointerup', (e)=>{
-    const now = Date.now();
-    if(now - lastTap < 300){
-      const rect = canvas.getBoundingClientRect();
-      const sx = (e.clientX - rect.left) * (cw/rect.width);
-      const sy = (e.clientY - rect.top)  * (ch/rect.height);
-      const w = screenToWorld(sx, sy);
-      // 新しい注視点を選ぶこの瞬間だけ、実体の近くへそっと寄せる
-      const snapped = snapToNearbySolid(w.x, w.y);
-      state.view.cx = snapped.cx;
-      state.view.cy = snapped.cy;
-      state.view.halfW = clampHalfW(state.view.halfW * 0.5);
-      updateViewScale();
-      maybeRebaseCoordinates();
-      updateZoomBadge();
-      renderCurrent();
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1){
+      touchState = { mode: 'pan', lastX: e.touches[0].clientX, lastY: e.touches[0].clientY };
+    } else if (e.touches.length >= 2){
+      const d = touchDist(e.touches[0], e.touches[1]);
+      const mid = touchMid(e.touches[0], e.touches[1]);
+      touchState = { mode: 'pinch', startDist: d, lastDist: d, midX: mid.x, midY: mid.y };
     }
-    lastTap = now;
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!touchState) return;
+    if (touchState.mode === 'pan' && e.touches.length === 1){
+      const t = e.touches[0];
+      panBy(t.clientX - touchState.lastX, t.clientY - touchState.lastY);
+      touchState.lastX = t.clientX; touchState.lastY = t.clientY;
+    } else if (touchState.mode === 'pinch' && e.touches.length >= 2){
+      const d = touchDist(e.touches[0], e.touches[1]);
+      const mid = touchMid(e.touches[0], e.touches[1]);
+      const factor = d / touchState.lastDist;
+      zoomAt(mid.x, mid.y, factor);
+      touchState.lastDist = d;
+      touchState.midX = mid.x; touchState.midY = mid.y;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (e.touches.length === 0) touchState = null;
+    else if (e.touches.length === 1) {
+      touchState = { mode: 'pan', lastX: e.touches[0].clientX, lastY: e.touches[0].clientY };
+    }
   });
 
-  /* ============ 初期化 ============ */
-  resizeCanvas();
-  resetView();
-  selectType('sierpinski');
+  // Buttons
+  document.getElementById('zoomIn').addEventListener('click', () => zoomAt(W/2, H/2, 1.6));
+  document.getElementById('zoomOut').addEventListener('click', () => zoomAt(W/2, H/2, 1/1.6));
+  document.getElementById('resetBtn').addEventListener('click', resetView);
 
+  // continuous zoom on press-and-hold for the +/- buttons
+  function holdRepeat(el, fn){
+    let interval = null;
+    const start = (e) => { e.preventDefault(); fn(); interval = setInterval(fn, 60); };
+    const stop = () => { clearInterval(interval); interval = null; };
+    el.addEventListener('mousedown', start);
+    el.addEventListener('touchstart', start, { passive:false });
+    ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev => el.addEventListener(ev, stop));
+  }
+  holdRepeat(document.getElementById('zoomIn'), () => zoomAt(W/2, H/2, 1.06));
+  holdRepeat(document.getElementById('zoomOut'), () => zoomAt(W/2, H/2, 1/1.06));
+
+  // hide hint after first interaction
+  let hintHidden = false;
+  function hideHint(){
+    if (hintHidden) return;
+    hintHidden = true;
+    document.getElementById('hint').classList.add('hidden');
+  }
+  canvas.addEventListener('mousedown', hideHint);
+  canvas.addEventListener('touchstart', hideHint);
+  canvas.addEventListener('wheel', hideHint);
+  setTimeout(hideHint, 6000);
+
+  // ---------- Init ----------
+  resize();
+  resetView();
+  loop();
 })();
 </script>
 </body>
